@@ -8,10 +8,8 @@ declare global {
     }
 }
 
-declare module 'cdek-widget' {
-    export class CdekWidget {
-        widget: ComponentProps<YandexMap>
+export declare class CdekWidget {
+    widget: ComponentProps<YandexMap>
 
-        constructor(target: HTMLElement)
-    }
+    constructor(target: HTMLElement)
 }
