@@ -1,12 +1,13 @@
 {
     "name": "cdek-widget",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "license": "MIT",
     "type": "module",
     "files": [
         "dist/*",
         "types/*"
     ],
+    "main": "./dist/index.js",
     "module": "./dist/index.js",
     "exports": {
         ".": {
