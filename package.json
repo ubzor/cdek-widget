@@ -1,6 +1,6 @@
 {
     "name": "cdek-widget",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "license": "MIT",
     "type": "module",
     "files": [
@@ -8,10 +8,10 @@
         "types/index.d.ts"
     ],
     "module": "./dist/index.js",
-    "types": "./types/index.d.ts",
     "exports": {
         ".": {
-            "import": "./dist/index.js"
+            "import": "./dist/index.js",
+            "types": "./types/index.d.ts"
         },
         "./style.css": {
             "import": "./dist/style.css"
