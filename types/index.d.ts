@@ -2,12 +2,6 @@ import type { ComponentProps } from 'svelte'
 
 import type YandexMap from '@/lib/YandexMap.svelte'
 
-declare global {
-    interface Window {
-        ymaps3: typeof ymaps3
-    }
-}
-
 export declare class CdekWidget {
     widget: ComponentProps<YandexMap>
 
