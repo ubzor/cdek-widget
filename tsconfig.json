@@ -4,7 +4,6 @@
         "target": "ESNext",
         "module": "ESNext",
         "strict": true,
-        "moduleResolution": "Node",
         "esModuleInterop": true,
         "verbatimModuleSyntax": true,
         "isolatedModules": true,
