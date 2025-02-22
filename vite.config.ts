@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         },
         plugins: [
             ...(mode === 'development' ? [sveltekit()] : []),
-            ...(mode === 'production' ? [svelte()] : [])
+            ...(mode === 'production' ? [svelte({ emitCss: false })] : [])
         ]
     }
 })
