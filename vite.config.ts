@@ -12,6 +12,11 @@ export default defineConfig(({ mode }) => {
                 formats: ['es']
             }
         },
+        resolve: {
+            alias: {
+                '@': '/src'
+            }
+        },
         plugins: [
             ...(mode === 'development' ? [sveltekit()] : []),
             ...(mode === 'production' ? [svelte({ emitCss: false })] : [])

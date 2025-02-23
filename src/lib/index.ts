@@ -1,13 +1,14 @@
-import { mount, type ComponentProps } from 'svelte'
+import { mount } from 'svelte'
 
-import YandexMap from './YandexMap.svelte'
+import YandexMap from '@/components/YandexMap.svelte'
 
 export class CdekWidget {
-    widget: ComponentProps<YandexMap> & { $set?: any; $on?: any }
+    #widget: YandexMap
 
-    constructor(target: HTMLElement) {
-        this.widget = mount(YandexMap, {
-            target
+    constructor(target: HTMLElement, yandexMapsApiKey: string) {
+        this.#widget = mount(YandexMap, {
+            target,
+            props: { yandexMapsApiKey }
         })
     }
 }

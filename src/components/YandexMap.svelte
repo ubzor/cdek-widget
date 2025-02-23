@@ -1,6 +1,8 @@
 <script lang="ts">
     import { onMount } from 'svelte'
 
+    let { yandexMapsApiKey }: { yandexMapsApiKey: string } = $props()
+
     let mapContainer: HTMLDivElement
 
     const initMap = async () => {
@@ -23,8 +25,7 @@
     onMount(() => {
         if (!window.ymaps3) {
             const script = document.createElement('script')
-            script.src =
-                'https://api-maps.yandex.ru/v3/?apikey=01c48a38-a5df-4283-89c6-a01702ab881b&lang=ru_RU'
+            script.src = `https://api-maps.yandex.ru/v3/?apikey=${yandexMapsApiKey}&lang=ru_RU`
             script.async = true
             document.head.appendChild(script)
             script.onload = () => initMap()
