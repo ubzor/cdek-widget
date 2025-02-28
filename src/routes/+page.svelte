@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte'
 
-    import { PUBLIC_YANDEX_MAPS_API_KEY } from '$env/static/public'
+    import { PUBLIC_API_URL, PUBLIC_YANDEX_MAPS_API_KEY } from '$env/static/public'
 
     import { CdekWidget } from '@/lib'
 
@@ -9,7 +9,7 @@
     let widget: CdekWidget
 
     onMount(() => {
-        widget = new CdekWidget(mapContainer, PUBLIC_YANDEX_MAPS_API_KEY)
+        widget = new CdekWidget(mapContainer, PUBLIC_API_URL, PUBLIC_YANDEX_MAPS_API_KEY)
     })
 </script>
 

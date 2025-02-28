@@ -1,40 +1,46 @@
 <script lang="ts">
-    import { onMount } from 'svelte'
+    import type { YMap, LngLatBounds } from 'ymaps3'
+    import type { CdekCoordinates } from '#/api'
 
-    let { yandexMapsApiKey }: { yandexMapsApiKey: string } = $props()
+    let {
+        deliveryPoints = [],
+        onGetDeliveryPointsInBoundingBox
+    }: {
+        deliveryPoints: CdekCoordinates[]
+        onGetDeliveryPointsInBoundingBox: (bounds: LngLatBounds) => void
+    } = $props()
 
     let mapContainer: HTMLDivElement
+    let map: YMap
 
-    const initMap = async () => {
+    export const initMap = async () => {
         await window.ymaps3.ready
 
-        const map = new window.ymaps3.YMap(mapContainer, {
-            location: {
-                center: [37.588144, 55.733842],
-                zoom: 10
-            }
-        })
-
-        map.addChild(new window.ymaps3.YMapDefaultSchemeLayer({}))
+        map = new window.ymaps3.YMap(
+            mapContainer,
+            {
+                location: {
+                    center: [37.588144, 55.733842],
+                    zoom: 10
+                }
+            },
+            [
+                new window.ymaps3.YMapDefaultSchemeLayer({}),
+                new window.ymaps3.YMapListener({
+                    layer: 'any',
+                    onUpdate: async ({ location: { bounds }, mapInAction }) => {
+                        if (!mapInAction) {
+                            onGetDeliveryPointsInBoundingBox(bounds)
+                        }
+                    }
+                })
+            ]
+        )
     }
 
-    const setLocation = (location: string) => {
+    export const setLocation = (location: string) => {
         console.log(`set location to ${location}`)
     }
-
-    onMount(() => {
-        if (!window.ymaps3) {
-            const script = document.createElement('script')
-            script.src = `https://api-maps.yandex.ru/v3/?apikey=${yandexMapsApiKey}&lang=ru_RU`
-            script.async = true
-            document.head.appendChild(script)
-            script.onload = () => initMap()
-        } else {
-            initMap()
-        }
-    })
-
-    export { setLocation }
 </script>
 
 <div bind:this={mapContainer} class="map"></div>
