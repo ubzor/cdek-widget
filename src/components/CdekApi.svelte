@@ -71,38 +71,40 @@
         })
 
         const reader = response.body?.getReader()
-
         let remainder = ''
 
         while (reader) {
             const { done, value } = await reader.read()
 
-            if (done) {
-                // Do something with last chunk of data then exit reader
+            if (value) {
+                const { parsedData, remainder: newReminder } = parseFromUintArray(
+                    value,
+                    remainder
+                )
 
-                if (value) console.log(Buffer.from(value).toString('utf8'))
+                if (parsedData.length) {
+                    console.log(parsedData)
+                    // Here you can process the parsedData as needed
+                }
 
-                // if (value) {
-                //     const { parsedData, remainder: currentRemainder } =
-                //         parseFromUintArray(value, remainder)
-                //     remainder = currentRemainder
-                // }
-
-                // console.log(remainder)
-
-                // console.log('------------------------')
-
-                return
+                remainder = newReminder
             }
 
-            if (value) {
-                console.log(Buffer.from(value).toString('utf8'))
-
-                // const { parsedData, remainder: currentRemainder } = parseFromUintArray(
-                //     value,
-                //     remainder
-                // )
-                // remainder = currentRemainder
+            if (done) {
+                // Process any leftover JSON from the last chunk
+                if (remainder) {
+                    try {
+                        const finalParsedData: CdekCoordinates[] = JSON.parse(
+                            '[' + remainder.slice(1) + '}]'
+                        )
+                        console.log(finalParsedData)
+                    } catch (error) {
+                        console.log(remainder)
+                        console.error('Error parsing the final remaining JSON:', error)
+                    }
+                }
+                console.log('-------------------')
+                return
             }
         }
     }
