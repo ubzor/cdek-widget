@@ -1,59 +1,95 @@
 <script lang="ts">
-    import { Buffer } from 'buffer'
+    import { useDebounce } from 'runed'
+
+    import { mergeUnique } from '@/utils/mergeUnique'
+    import { parseJsonFromUintArray } from '@/utils/parseJsonFromUintArray'
 
     import type { LngLatBounds } from 'ymaps3'
     import type { CdekCoordinates } from '#/api'
 
-    let { apiUrl }: { apiUrl: string } = $props()
+    let {
+        apiUrl,
+        bounds,
+        deliveryPoints = $bindable(),
+        onAddedDeliveryPoints,
+        onRemovedDeliveryPoints
+    }: {
+        apiUrl: string
+        bounds?: LngLatBounds
+        deliveryPoints: CdekCoordinates[]
+        onAddedDeliveryPoints: (deliveryPoints: CdekCoordinates[]) => void
+        onRemovedDeliveryPoints: (deliveryPoints: CdekCoordinates[]) => void
+    } = $props()
 
-    const parseFromUintArray = (
-        value: Uint8Array<ArrayBufferLike>,
-        lastReminder: string
-    ) => {
-        let remainder = ''
+    let isFetchingDeliveryPoints = false
+    let isParsingDeliveryPoints = false
+    let isAbortingGettingDeliveryPoints = false
 
-        let jsonString = Buffer.from(value)
-            .toString('utf8')
-            .replaceAll(/(\r\n|\n|\r)/gm, '')
+    let abortController: AbortController = new AbortController()
 
-        if (lastReminder) {
-            jsonString = lastReminder + jsonString
-        }
+    const filterDeliveryPointsInBoundingBoxDebounced = useDebounce(() => {
+        if (!bounds) return
 
-        if (jsonString.startsWith('[')) {
-            jsonString = jsonString.slice(1)
-        }
+        const {
+            0: [minLongitude, maxLatitude],
+            1: [maxLongitude, minLatitude]
+        } = bounds
 
-        if (jsonString.endsWith(']')) {
-            jsonString = jsonString.slice(0, jsonString.length - 2)
-        }
+        const { filtered, removed } = deliveryPoints.reduce(
+            (acc: { filtered: CdekCoordinates[]; removed: CdekCoordinates[] }, point) => {
+                const { longitude, latitude } = point
+                if (
+                    longitude >= minLongitude &&
+                    longitude <= maxLongitude &&
+                    latitude >= minLatitude &&
+                    latitude <= maxLatitude
+                ) {
+                    acc.filtered.push(point)
+                } else {
+                    acc.removed.push(point)
+                }
+                return acc
+            },
+            { filtered: [], removed: [] }
+        )
 
-        if (jsonString.startsWith(',')) {
-            jsonString = jsonString.slice(1)
-        }
+        deliveryPoints = filtered
 
-        if (!jsonString.endsWith('}')) {
-            const separatorIndex = jsonString.indexOf(',{')
-            if (separatorIndex !== -1) {
-                remainder = jsonString.slice(separatorIndex)
-                jsonString = jsonString.slice(0, separatorIndex)
-            }
-        }
+        onRemovedDeliveryPoints(removed)
+    }, 500)
 
-        let parsedData: CdekCoordinates[] = []
+    // New helper function extracting repeated logic
+    function updateDeliveryPoints(newPoints: CdekCoordinates[]) {
+        const { merged, added } = mergeUnique<CdekCoordinates>(
+            deliveryPoints,
+            newPoints,
+            'deliveryPointId'
+        )
+        deliveryPoints = merged
 
-        try {
-            parsedData = JSON.parse('[' + jsonString + ']')
-
-            // console.log(parsedData)
-        } catch (error: any) {
-            // console.log('cant parse', jsonString)
-        }
-
-        return { parsedData, remainder }
+        onAddedDeliveryPoints(added)
+        filterDeliveryPointsInBoundingBoxDebounced()
     }
 
     export const getDeliveryPointsInBoundingBox = async (bounds: LngLatBounds) => {
+        if (isFetchingDeliveryPoints) {
+            abortController.abort()
+            abortController = new AbortController()
+        }
+
+        if (isParsingDeliveryPoints) {
+            isAbortingGettingDeliveryPoints = true
+
+            await new Promise<void>((resolve) => {
+                const interval = setInterval(() => {
+                    if (!isAbortingGettingDeliveryPoints && !isParsingDeliveryPoints) {
+                        clearInterval(interval)
+                        resolve()
+                    }
+                }, 10)
+            })
+        }
+
         const {
             0: [minLongitude, maxLatitude],
             1: [maxLongitude, minLatitude]
@@ -66,44 +102,75 @@
             minLatitude: minLatitude.toString()
         })
 
-        const response = await fetch(`${apiUrl}/delivery-points/bounding-box?${params}`, {
-            method: 'GET'
-        })
+        let response: Response
+
+        isFetchingDeliveryPoints = true
+
+        try {
+            response = await fetch(`${apiUrl}/delivery-points/bounding-box?${params}`, {
+                method: 'GET',
+                signal: abortController.signal
+            })
+
+            isFetchingDeliveryPoints = false
+        } catch (error: any) {
+            isFetchingDeliveryPoints = false
+
+            if (error.name !== 'AbortError') {
+                console.log('Error fetching delivery points:', error.message)
+            }
+
+            return
+        }
 
         const reader = response.body?.getReader()
         let remainder = ''
 
+        isParsingDeliveryPoints = true
+
         while (reader) {
+            if (isAbortingGettingDeliveryPoints) {
+                reader.cancel()
+
+                isAbortingGettingDeliveryPoints = false
+                isParsingDeliveryPoints = false
+
+                return
+            }
+
             const { done, value } = await reader.read()
 
             if (value) {
-                const { parsedData, remainder: newReminder } = parseFromUintArray(
-                    value,
-                    remainder
-                )
-
-                if (parsedData.length) {
-                    console.log(parsedData)
-                    // Here you can process the parsedData as needed
-                }
+                const { parsedData, remainder: newReminder } = parseJsonFromUintArray<
+                    CdekCoordinates[]
+                >(value, remainder)
 
                 remainder = newReminder
+
+                if (!parsedData) continue
+
+                updateDeliveryPoints(parsedData)
             }
 
             if (done) {
                 // Process any leftover JSON from the last chunk
                 if (remainder) {
                     try {
-                        const finalParsedData: CdekCoordinates[] = JSON.parse(
-                            '[' + remainder.slice(1) + '}]'
+                        updateDeliveryPoints(
+                            JSON.parse(
+                                '[' +
+                                    (remainder.startsWith(',')
+                                        ? remainder.slice(1)
+                                        : remainder) +
+                                    '}]'
+                            )
                         )
-                        console.log(finalParsedData)
                     } catch (error) {
-                        console.log(remainder)
                         console.error('Error parsing the final remaining JSON:', error)
                     }
                 }
-                console.log('-------------------')
+
+                isParsingDeliveryPoints = false
                 return
             }
         }

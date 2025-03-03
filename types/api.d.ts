@@ -1,7 +1,7 @@
 // TODO: получать типы из cdek-backend
 
 export interface CdekCoordinates {
-    uuid: string
+    deliveryPointId: string
     latitude: number
     longitude: number
 }
