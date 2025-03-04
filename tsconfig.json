@@ -10,11 +10,10 @@
         "baseUrl": "./",
         "typeRoots": [
             "./node_modules/@types",
-            "./node_modules/@yandex/ymaps3-types",
             "./types"
         ],
         "paths": {
-            "ymaps3": ["./node_modules/@yandex/ymaps3-types"],
+            "ymaps": ["./node_modules/@types/yandex-maps"],
             "@/*": ["./src/*"],
             "#/*": ["./types/*"]
         }

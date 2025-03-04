@@ -3,7 +3,6 @@
     import YandexMap from '@/components/YandexMap.svelte'
     import YandexMapLoader from '@/components/YandexMapLoader.svelte'
 
-    import type { LngLatBounds } from 'ymaps3'
     import type { CdekCoordinates } from '#/api'
 
     let { apiUrl, yandexMapsApiKey }: { apiUrl: string; yandexMapsApiKey: string } =
@@ -12,8 +11,9 @@
     let cdekApiComponent: CdekApi
     let yandexMapComponent: YandexMap
 
+    let yandexMapsApiIsLoaded = $state(false)
     let deliveryPoints: CdekCoordinates[] = $state([])
-    let bounds: LngLatBounds | undefined = $state()
+    let bounds: number[][] | undefined = $state()
 </script>
 
 <div>
@@ -25,11 +25,17 @@
         onAddedDeliveryPoints={yandexMapComponent.addDeliveryPoints}
         onRemovedDeliveryPoints={yandexMapComponent.removeDeliveryPoints}
     />
-    <YandexMapLoader {yandexMapsApiKey} onLoaded={yandexMapComponent.initMap} />
-    <YandexMap
-        bind:this={yandexMapComponent}
-        bind:bounds
-        {deliveryPoints}
-        onGetDeliveryPointsInBoundingBox={cdekApiComponent.getDeliveryPointsInBoundingBox}
+    <YandexMapLoader
+        {yandexMapsApiKey}
+        onLoaded={() => {
+            yandexMapsApiIsLoaded = true
+        }}
     />
+    {#if yandexMapsApiIsLoaded}
+        <YandexMap
+            bind:this={yandexMapComponent}
+            bind:bounds
+            onGetDeliveryPointsInBoundingBox={cdekApiComponent.getDeliveryPointsInBoundingBox}
+        />
+    {/if}
 </div>

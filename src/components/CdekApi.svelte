@@ -1,10 +1,15 @@
 <script lang="ts">
+    import { onMount } from 'svelte'
     import { useDebounce } from 'runed'
 
-    import { mergeUnique } from '@/utils/mergeUnique'
+    // @ts-ignore
+    import Queue from 'queue'
+
     import { parseJsonFromUintArray } from '@/utils/parseJsonFromUintArray'
 
-    import type { LngLatBounds } from 'ymaps3'
+    import MergeDeliveryPointsArrayWorker from '@/workers/mergeDeliveryPointsArrays?worker'
+    import FilterDeliveryPointsInBoundingBoxWorker from '@/workers/filterDeliveryPointsInBoundingBox?worker'
+
     import type { CdekCoordinates } from '#/api'
 
     let {
@@ -15,63 +20,78 @@
         onRemovedDeliveryPoints
     }: {
         apiUrl: string
-        bounds?: LngLatBounds
+        bounds?: number[][]
         deliveryPoints: CdekCoordinates[]
-        onAddedDeliveryPoints: (deliveryPoints: CdekCoordinates[]) => void
-        onRemovedDeliveryPoints: (deliveryPoints: CdekCoordinates[]) => void
+        onAddedDeliveryPoints: (added: object[]) => void
+        onRemovedDeliveryPoints: (removed: string[]) => void
     } = $props()
 
-    let isFetchingDeliveryPoints = false
-    let isParsingDeliveryPoints = false
-    let isAbortingGettingDeliveryPoints = false
+    let isFetchingDeliveryPoints = $state(false)
+    let isParsingDeliveryPoints = $state(false)
+    let isAbortingGettingDeliveryPoints = $state(false)
 
-    let abortController: AbortController = new AbortController()
+    let queue = new Queue({ autostart: true, concurrency: 1 })
 
-    const filterDeliveryPointsInBoundingBoxDebounced = useDebounce(() => {
-        if (!bounds) return
+    let abortController: AbortController = $state(new AbortController())
 
-        const {
-            0: [minLongitude, maxLatitude],
-            1: [maxLongitude, minLatitude]
-        } = bounds
+    let mergeWorker: Worker
+    let filterWorker: Worker
 
-        const { filtered, removed } = deliveryPoints.reduce(
-            (acc: { filtered: CdekCoordinates[]; removed: CdekCoordinates[] }, point) => {
-                const { longitude, latitude } = point
-                if (
-                    longitude >= minLongitude &&
-                    longitude <= maxLongitude &&
-                    latitude >= minLatitude &&
-                    latitude <= maxLatitude
-                ) {
-                    acc.filtered.push(point)
-                } else {
-                    acc.removed.push(point)
+    const updateDeliveryPoints = (newPoints: CdekCoordinates[]) => {
+        queue.push(async () => {
+            const { merged, added } = await new Promise<
+                Record<'merged' | 'added', CdekCoordinates[]>
+            >((resolve) => {
+                mergeWorker = new MergeDeliveryPointsArrayWorker()
+
+                mergeWorker.onmessage = (event) => {
+                    resolve(event.data)
                 }
-                return acc
-            },
-            { filtered: [], removed: [] }
-        )
 
-        deliveryPoints = filtered
+                mergeWorker.postMessage({
+                    array1: $state.snapshot(deliveryPoints),
+                    array2: $state.snapshot(newPoints)
+                })
+            })
 
-        onRemovedDeliveryPoints(removed)
-    }, 500)
+            deliveryPoints = merged
+            onAddedDeliveryPoints(added)
 
-    // New helper function extracting repeated logic
-    function updateDeliveryPoints(newPoints: CdekCoordinates[]) {
-        const { merged, added } = mergeUnique<CdekCoordinates>(
-            deliveryPoints,
-            newPoints,
-            'deliveryPointId'
-        )
-        deliveryPoints = merged
-
-        onAddedDeliveryPoints(added)
-        filterDeliveryPointsInBoundingBoxDebounced()
+            filterDeliveryPointsInBoundingBoxDebounced()
+        })
     }
 
-    export const getDeliveryPointsInBoundingBox = async (bounds: LngLatBounds) => {
+    const filterDeliveryPointsInBoundingBox = () => {
+        queue.push(async () => {
+            if (!bounds) return
+
+            const { filtered, removed } = await new Promise<{
+                filtered: CdekCoordinates[]
+                removed: string[]
+            }>((resolve) => {
+                filterWorker = new FilterDeliveryPointsInBoundingBoxWorker()
+
+                filterWorker.onmessage = (event) => {
+                    resolve(event.data)
+                }
+
+                filterWorker.postMessage({
+                    deliveryPoints: $state.snapshot(deliveryPoints),
+                    bounds: $state.snapshot(bounds)
+                })
+            })
+
+            deliveryPoints = filtered
+            onRemovedDeliveryPoints(removed)
+        })
+    }
+
+    const filterDeliveryPointsInBoundingBoxDebounced = useDebounce(
+        filterDeliveryPointsInBoundingBox,
+        500
+    )
+
+    export const getDeliveryPointsInBoundingBox = async (bounds: number[][]) => {
         if (isFetchingDeliveryPoints) {
             abortController.abort()
             abortController = new AbortController()
@@ -79,6 +99,9 @@
 
         if (isParsingDeliveryPoints) {
             isAbortingGettingDeliveryPoints = true
+
+            queue.end()
+            queue.start()
 
             await new Promise<void>((resolve) => {
                 const interval = setInterval(() => {
@@ -88,11 +111,14 @@
                     }
                 }, 10)
             })
+
+            mergeWorker?.terminate()
+            filterWorker?.terminate()
         }
 
         const {
-            0: [minLongitude, maxLatitude],
-            1: [maxLongitude, minLatitude]
+            0: [minLatitude, minLongitude],
+            1: [maxLatitude, maxLongitude]
         } = bounds
 
         const params = new URLSearchParams({
@@ -149,14 +175,13 @@
 
                 if (!parsedData) continue
 
-                updateDeliveryPoints(parsedData)
+                await updateDeliveryPoints(parsedData)
             }
 
             if (done) {
-                // Process any leftover JSON from the last chunk
                 if (remainder) {
                     try {
-                        updateDeliveryPoints(
+                        await updateDeliveryPoints(
                             JSON.parse(
                                 '[' +
                                     (remainder.startsWith(',')
@@ -175,4 +200,8 @@
             }
         }
     }
+
+    onMount(() => {
+        queue.start()
+    })
 </script>

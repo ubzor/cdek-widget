@@ -1,6 +1,8 @@
+import ymaps from 'yandex-maps'
+
 declare global {
     interface Window {
-        ymaps3: typeof ymaps3
+        ymaps: typeof ymaps
     }
 }
 

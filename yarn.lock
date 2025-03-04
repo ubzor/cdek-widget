@@ -320,15 +320,10 @@
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.6.tgz#628effeeae2064a1b4e79f78e81d87b7e5fc7b50"
   integrity sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==
 
-"@yandex/ymaps3-clusterer@^0.0.10":
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/@yandex/ymaps3-clusterer/-/ymaps3-clusterer-0.0.10.tgz#926d1fcc6e875e958a65e2b744751d99d887ae0c"
-  integrity sha512-cGnhnaR4SLb1edmviYafVcrCLQeQavcOWDmd9Y3tU5Y2Uq9S6ajNkpgkfvU8rmIDWhfSA+HJfktBpKtdi+kMWQ==
-
-"@yandex/ymaps3-types@^1.0.15943616":
-  version "1.0.15943616"
-  resolved "https://registry.yarnpkg.com/@yandex/ymaps3-types/-/ymaps3-types-1.0.15943616.tgz#c6c5dae1500c60248f0895d15fe1ff29bcb95de5"
-  integrity sha512-gWRaj8wX+3ytyNI+vHE6qCDNFT/sv59QThsuJcVx5nxPbvoYy554lk9ppkGoOL3530TCyTcNEsYNj0CKAWT6yA==
+"@types/yandex-maps@^2.1.36":
+  version "2.1.36"
+  resolved "https://registry.yarnpkg.com/@types/yandex-maps/-/yandex-maps-2.1.36.tgz#5c611ff04e58f6cb6ce626dcc8a840cd218d4715"
+  integrity sha512-SxKOLe627WMFkC3jo7VelT29Uvbvg+LHRtD3cA6W0qWNuf7WQBv+lTaN+os1Vdum+EpglKBJbzjV8PJqwPZUQA==
 
 acorn-typescript@^1.4.13:
   version "1.4.13"
@@ -497,6 +492,11 @@ prettier@^3.5.2:
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.5.2.tgz#d066c6053200da0234bf8fa1ef45168abed8b914"
   integrity sha512-lc6npv5PH7hVqozBR7lkBNOGXV9vMwROAPlumdBkX0wTbbzPu/U1hk5yL8p2pt4Xoc+2mkT8t/sow2YrV/M5qg==
+
+queue@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/queue/-/queue-7.0.0.tgz#2f43841ac492a4848007089810702704f5b2c4ae"
+  integrity sha512-sphwS7HdfQnvrJAXUNAUgpf9H/546IE3p/5Lf2jr71O4udEYlqAhkevykumas2FYuMkX/29JMOgrRdRoYZ/X9w==
 
 rollup@^4.30.1:
   version "4.34.8"

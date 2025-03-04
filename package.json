@@ -1,6 +1,6 @@
 {
     "name": "cdek-widget",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "license": "MIT",
     "type": "module",
     "files": [
@@ -22,7 +22,7 @@
         "@sveltejs/adapter-auto": "^4.0.0",
         "@sveltejs/kit": "^2.17.3",
         "@sveltejs/vite-plugin-svelte": "^5.0.3",
-        "@yandex/ymaps3-types": "^1.0.15943616",
+        "@types/yandex-maps": "^2.1.36",
         "prettier": "^3.5.2",
         "prettier-plugin-svelte": "^3.3.3",
         "svelte": "^5.20.5",
@@ -31,7 +31,7 @@
         "vite": "^6.1.1"
     },
     "dependencies": {
-        "@yandex/ymaps3-clusterer": "^0.0.10",
+        "queue": "^7.0.0",
         "runed": "^0.23.4"
     }
 }
