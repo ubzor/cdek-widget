@@ -14,5 +14,7 @@ export class CdekWidget {
         })
     }
 
-    clearSelection = () => {}
+    clearSelection = () => {
+        // TODO: ...
+    }
 }
