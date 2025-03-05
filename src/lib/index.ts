@@ -2,13 +2,17 @@ import { mount } from 'svelte'
 
 import App from '@/components/App.svelte'
 
+import type { CdekWidgetOptions } from '#/index.d'
+
 export class CdekWidget {
     #widget: App
 
-    constructor(target: HTMLElement, apiUrl: string, yandexMapsApiKey: string) {
+    constructor(target: HTMLElement, options: CdekWidgetOptions) {
         this.#widget = mount(App, {
             target,
-            props: { apiUrl, yandexMapsApiKey }
+            props: options
         })
     }
+
+    clearSelection = () => {}
 }

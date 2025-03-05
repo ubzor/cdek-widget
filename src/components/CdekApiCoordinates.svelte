@@ -10,20 +10,20 @@
     import MergeDeliveryPointsArrayWorker from '@/workers/mergeDeliveryPointsArrays?worker'
     import FilterDeliveryPointsInBoundingBoxWorker from '@/workers/filterDeliveryPointsInBoundingBox?worker'
 
-    import type { CdekCoordinates } from '#/api'
+    import type { CdekCoordinates } from '#/api.d'
 
     let {
         apiUrl,
         bounds,
-        deliveryPoints = $bindable(),
+        deliveryPointsCoordinates = $bindable(),
         onAddedDeliveryPoints,
         onRemovedDeliveryPoints
     }: {
         apiUrl: string
         bounds?: number[][]
-        deliveryPoints: CdekCoordinates[]
-        onAddedDeliveryPoints: (added: object[]) => void
-        onRemovedDeliveryPoints: (removed: string[]) => void
+        deliveryPointsCoordinates: CdekCoordinates[]
+        onAddedDeliveryPoints?: (added: object[]) => void
+        onRemovedDeliveryPoints?: (removed: string[]) => void
     } = $props()
 
     let isFetchingDeliveryPoints = $state(false)
@@ -49,13 +49,13 @@
                 }
 
                 mergeWorker.postMessage({
-                    array1: $state.snapshot(deliveryPoints),
+                    array1: $state.snapshot(deliveryPointsCoordinates),
                     array2: $state.snapshot(newPoints)
                 })
             })
 
-            deliveryPoints = merged
-            onAddedDeliveryPoints(added)
+            deliveryPointsCoordinates = merged
+            onAddedDeliveryPoints && onAddedDeliveryPoints(added)
 
             filterDeliveryPointsInBoundingBoxDebounced()
         })
@@ -76,13 +76,13 @@
                 }
 
                 filterWorker.postMessage({
-                    deliveryPoints: $state.snapshot(deliveryPoints),
+                    deliveryPoints: $state.snapshot(deliveryPointsCoordinates),
                     bounds: $state.snapshot(bounds)
                 })
             })
 
-            deliveryPoints = filtered
-            onRemovedDeliveryPoints(removed)
+            deliveryPointsCoordinates = filtered
+            onRemovedDeliveryPoints && onRemovedDeliveryPoints(removed)
         })
     }
 
@@ -175,13 +175,13 @@
 
                 if (!parsedData) continue
 
-                await updateDeliveryPoints(parsedData)
+                updateDeliveryPoints(parsedData)
             }
 
             if (done) {
                 if (remainder) {
                     try {
-                        await updateDeliveryPoints(
+                        updateDeliveryPoints(
                             JSON.parse(
                                 '[' +
                                     (remainder.startsWith(',')

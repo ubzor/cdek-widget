@@ -9,10 +9,19 @@
     let widget: CdekWidget
 
     onMount(() => {
-        widget = new CdekWidget(mapContainer, PUBLIC_API_URL, PUBLIC_YANDEX_MAPS_API_KEY)
+        widget = new CdekWidget(mapContainer, {
+            apiUrl: PUBLIC_API_URL,
+            yandexMapsApiKey: PUBLIC_YANDEX_MAPS_API_KEY,
+            onReady: () => {
+                console.log('Widget is ready')
+            },
+            onDeliveryPointSelected: (deliveryPoint) => {
+                console.log('Delivery point selected:', deliveryPoint)
+            }
+        })
     })
 </script>
 
-<main>
+<main class="p-4">
     <div bind:this={mapContainer}></div>
 </main>

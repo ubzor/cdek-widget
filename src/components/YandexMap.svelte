@@ -2,21 +2,24 @@
     import { onMount } from 'svelte'
 
     import type { Map, ObjectManager } from 'yandex-maps'
-    import type { CdekCoordinates } from '#/api'
+
+    import type { CdekWidgetOptions } from '#/index.d'
 
     let {
         bounds = $bindable(),
-        onGetDeliveryPointsInBoundingBox
+        onGetDeliveryPointsInBoundingBox,
+        onGetDeliveryPointById,
+        onReady
     }: {
         bounds?: number[][]
         onGetDeliveryPointsInBoundingBox: (bounds: number[][]) => void
+        onGetDeliveryPointById?: (deliveryPointId: string) => void
+        onReady: CdekWidgetOptions['onReady']
     } = $props()
 
     let mapContainer: HTMLDivElement
     let map: Map
     let objectManager: ObjectManager
-
-    let count = $state(0)
 
     export const initMap = async () => {
         map = new window.ymaps.Map(mapContainer, {
@@ -32,12 +35,28 @@
 
         map.geoObjects.add(objectManager)
 
-        map.events.add('actionend', (event) => {
+        map.events.add('actionend', (_event) => {
             bounds = map.getBounds()
             onGetDeliveryPointsInBoundingBox(bounds)
         })
 
+        map.geoObjects.events.add('click', async (event) => {
+            const deliveryPointId = event.get('objectId')
+
+            if (!deliveryPointId || deliveryPointId?.startsWith('__cluster__')) return
+
+            map.setCenter(
+                // @ts-ignore
+                objectManager.objects.getById(deliveryPointId)?.geometry.coordinates
+            )
+            map.setZoom(17)
+
+            onGetDeliveryPointById && onGetDeliveryPointById(deliveryPointId)
+        })
+
         onGetDeliveryPointsInBoundingBox(map.getBounds())
+
+        onReady && onReady()
     }
 
     export const addDeliveryPoints = (deliveryPoints: object[]) => {
@@ -54,14 +73,14 @@
 
     onMount(() => {
         window.ymaps.ready(initMap)
+
+        new ResizeObserver(() => {
+            map?.container.fitToViewport()
+        }).observe(mapContainer)
     })
 </script>
 
-<div bind:this={mapContainer} class="map"></div>
-
-<style>
-    .map {
-        width: 100%;
-        height: 400px;
-    }
-</style>
+<div
+    bind:this={mapContainer}
+    class="h-full w-full min-w-0 shrink-1 overflow-hidden"
+></div>

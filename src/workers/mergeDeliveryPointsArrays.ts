@@ -1,4 +1,4 @@
-import type { CdekCoordinates } from '#/api'
+import type { CdekCoordinates } from '#/api.d'
 
 // Регистрируем обработчик onmessage для воркера, который объединяет два массива точек доставки.
 self.onmessage = ({

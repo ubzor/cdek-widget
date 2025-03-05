@@ -1,9 +1,15 @@
 import { defineConfig } from 'vite'
 import { sveltekit } from '@sveltejs/kit/vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig(({ mode }) => {
     return {
+        server: {
+            fs: {
+                allow: [process.cwd()]
+            }
+        },
         build: {
             lib: {
                 entry: 'src/lib/index.ts',
@@ -14,12 +20,14 @@ export default defineConfig(({ mode }) => {
         },
         resolve: {
             alias: {
-                '@': '/src'
+                '@': '/src',
+                '#': '/types'
             }
         },
         plugins: [
             ...(mode === 'development' ? [sveltekit()] : []),
-            ...(mode === 'production' ? [svelte({ emitCss: false })] : [])
+            ...(mode === 'production' ? [svelte()] : []),
+            tailwindcss()
         ]
     }
 })
