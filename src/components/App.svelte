@@ -10,6 +10,7 @@
     import ListIcon from '@/components/ListIcon.svelte'
     import Loading from '@/components/Loading.svelte'
 
+    import Sidebar from '@/components/Sidebar.svelte'
     import DeliveryPoint from '@/components/DeliveryPoint.svelte'
     import DeliveryPointsList from '@/components/DeliveryPointsList.svelte'
 
@@ -113,12 +114,14 @@
                 <FiltersIcon />
 
                 {#if !deliveryPointComponentIsVisible && !deliveryPointsListComponentIsVisible}
-                    <ListIcon {deliveryPointsListComponentIsVisible} />
+                    <ListIcon bind:deliveryPointsListComponentIsVisible />
                 {/if}
             </div>
             {#if deliveryPointComponentIsVisible || deliveryPointsListComponentIsVisible}
-                <div
-                    class="min-w-[300px] max-w-[300px] flex-[0 0 300px] p-2 h-full shadow relative"
+                <Sidebar
+                    bind:activeDeliveryPoint
+                    bind:deliveryPointComponentIsVisible
+                    bind:deliveryPointsListComponentIsVisible
                 >
                     {#if activeDeliveryPoint}
                         <DeliveryPoint
@@ -128,9 +131,9 @@
                             {onDeliveryPointSelected}
                         />
                     {:else if deliveryPointsListComponentIsVisible}
-                        <DeliveryPointsList />
+                        <DeliveryPointsList bind:deliveryPointsInList />
                     {/if}
-                </div>
+                </Sidebar>
             {/if}
         </div>
     {/if}

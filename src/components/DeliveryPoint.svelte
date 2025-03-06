@@ -23,25 +23,17 @@
 </script>
 
 {#if activeDeliveryPoint}
-    <div class="bg-white rounded">
+    <div class="flex flex-col h-full">
+        <!-- Header: Тип и код точки доставки -->
         <div class="flex justify-between items-center">
-            <span class="text-lg font-semibold"
-                >{CdekDeliveryPointType[activeDeliveryPoint.type]}
-                {activeDeliveryPoint.code}</span
-            >
-            <button
-                class="text-gray-500 hover:text-gray-700 cursor-pointer"
-                aria-label="Закрыть"
-                onclick={() => {
-                    // Сбрасываем активную точку доставки и закрываем панель.
-                    activeDeliveryPoint = undefined
-                    deliveryPointComponentIsVisible = false
-                }}
-            >
-                <img src="/close.svg" alt="Закрыть" class="h-6 w-6" />
-            </button>
+            <span class="text-lg font-semibold">
+                {CdekDeliveryPointType[activeDeliveryPoint.type]}
+                {activeDeliveryPoint.code}
+            </span>
         </div>
-        <div class="mt-4">
+        
+        <!-- Main content: Остальное с прокруткой, если текст большой -->
+        <div class="flex-grow overflow-y-auto mt-4">
             <div class="font-bold text-lg">
                 {activeDeliveryPoint.location.city}, {activeDeliveryPoint.location
                     .address}
@@ -57,9 +49,9 @@
                     ? true
                     : undefined}
                 onclick={() => {
-                    // Сохраняем ID точки доставки и вызываем callback уведомления.
                     if (!activeDeliveryPoint) return
 
+                    // Сохраняем ID точки доставки и вызываем callback уведомления.
                     selectedDeliveryPointId = activeDeliveryPoint.uuid
                     onDeliveryPointSelected &&
                         onDeliveryPointSelected($state.snapshot(activeDeliveryPoint))
@@ -69,6 +61,18 @@
                     ? 'Выбрано'
                     : 'Выбрать'}
             </button>
+            <p class="mt-4">
+                Nullam ac sapien a sapien interdum tincidunt. Vestibulum ante ipsum primis
+                in faucibus orci luctus et ultrices posuere cubilia curae. Mauris non nisl
+                quis nisi eleifend interdum. Suspendisse potenti. In hac habitasse platea
+                dictumst. Pellentesque habitant morbi tristique senectus et netus et
+                malesuada fames ac turpis egestas. Fusce at nisi lacus. Nulla facilisi.
+                Morbi in tincidunt ex, in luctus risus. Ut nec massa vel erat fermentum
+                tincidunt. Maecenas non nunc sit amet neque vehicula blandit. Praesent
+                congue ex in ante cursus, ut convallis massa consequat. Donec ultricies,
+                est vitae consequat tincidunt, lorem elit blandit est, mattis dui sapien
+                at purus.
+            </p>
         </div>
     </div>
 {/if}
