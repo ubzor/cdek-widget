@@ -1,6 +1,6 @@
 import type { CdekCoordinates } from '#/api.d'
 
-// Регистрируем обработчик onmessage для воркера, который объединяет два массива точек доставки.
+// Объединяем два массива точек доставки.
 self.onmessage = ({
     data: { array1, array2 } // Извлекаем два массива точек доставки из входящего сообщения.
 }: MessageEvent<{ array1: CdekCoordinates[]; array2: CdekCoordinates[] }>) => {

@@ -67,8 +67,13 @@
         objectManager.remove(deliveryPoints)
     }
 
-    export const setLocation = (location: string) => {
-        console.log(`set location to ${location}`)
+    export const setMapCenterAndZoom = (center: number[], zoom: number) => {
+        map.setCenter(center)
+        map.setZoom(zoom)
+    }
+
+    export const setMapBounds = (bounds: number[][]) => {
+        map.setBounds(bounds)
     }
 
     onMount(() => {
@@ -80,7 +85,4 @@
     })
 </script>
 
-<div
-    bind:this={mapContainer}
-    class="h-full w-full min-w-0 shrink-1 overflow-hidden"
-></div>
+<div bind:this={mapContainer} class="h-full w-full"></div>

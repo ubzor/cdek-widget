@@ -14,6 +14,9 @@ export interface CdekDeliveryPoint {
     location: {
         city: string
         address: string
+
+        latitude?: number
+        longitude?: number
     }
     type: keyof typeof CdekDeliveryPointType
     workTime: string

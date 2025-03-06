@@ -11,7 +11,7 @@ export interface CdekWidgetOptions {
 export declare class CdekWidget {
     constructor(target: HTMLElement, options: CdekWidgetOptions)
 
-    // scrollToCity(city: string): void
-    // selectDeliveryPoint(code: string): void
+    scrollToCity(city: string): void
+    selectDeliveryPointByCode(code: string): void
     clearSelection: () => void
 }
