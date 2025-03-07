@@ -1,5 +1,7 @@
 <script lang="ts">
-    import type { CdekDeliveryPoint } from '#/api.d'
+    import throttle from 'lodash-es/throttle'
+
+    import type { CdekCoordinates, CdekDeliveryPoint } from '#/api.d'
 
     // Привязка пропсов из родительского компонента к локальным переменным.
     // activeDeliveryPoint: выбранная точка доставки (может быть undefined);
@@ -8,10 +10,14 @@
     let {
         activeDeliveryPoint = $bindable(),
         deliveryPointComponentIsVisible = $bindable(),
+        deliveryPointsInList = $bindable(),
+        deliveryPointsCoordinates = $bindable(),
         apiUrl
     }: {
         activeDeliveryPoint?: CdekDeliveryPoint
         deliveryPointComponentIsVisible: boolean
+        deliveryPointsInList: CdekDeliveryPoint[]
+        deliveryPointsCoordinates: CdekCoordinates[]
         apiUrl: string
     } = $props()
 
@@ -56,4 +62,39 @@
             console.log('Error fetching delivery point:', error.message)
         }
     }
+
+    // Функция для получения массива точек доставки по их идентификаторам.
+    // Принимает на вход массив строк (идентификаторы точек доставки).
+    // Делает GET-запрос к бэкенду с передачей списка ID через query-параметры.
+    // В случае успешного запроса возвращает массив объектов типа CdekDeliveryPoint,
+    // иначе в блоке catch выводит сообщение об ошибке и возвращает пустой массив.
+    export const loadMoreDeliveryPoints = throttle(async () => {
+        const alreadyLoadedIds = deliveryPointsInList.map(({ uuid }) => uuid)
+        const idsToLoad = deliveryPointsCoordinates
+            .filter(({ deliveryPointId }) => !alreadyLoadedIds.includes(deliveryPointId))
+            .slice(0, 10)
+            .map(({ deliveryPointId }) => deliveryPointId)
+
+        try {
+            // Если массив идентификаторов не пуст
+            if (idsToLoad.length) {
+                const query = idsToLoad
+                    .map((id) => `uuids=${encodeURIComponent(id)}`)
+                    .join('&')
+                const response = await fetch(`${apiUrl}/delivery-points/array?${query}`, {
+                    method: 'GET'
+                })
+
+                // Преобразование ответа в JSON.
+                // Ожидается, что API вернёт массив объектов точек доставки.
+                const deliveryPoints: CdekDeliveryPoint[] = await response.json()
+
+                // Возвращаем полученный массив точек доставки.
+                deliveryPointsInList = [...deliveryPointsInList, ...deliveryPoints]
+            }
+        } catch (error: any) {
+            // Логирование сообщения об ошибке в консоль с информацией о неудачном запросе.
+            console.error('Error fetching delivery points:', error.message)
+        }
+    }, 500)
 </script>

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte'
-    import { useDebounce } from 'runed'
+    import debounce from 'lodash-es/debounce'
 
     // @ts-ignore
     import Queue from 'queue'
@@ -10,7 +10,7 @@
     import MergeDeliveryPointsArrayWorker from '@/workers/mergeDeliveryPointsArrays?worker'
     import FilterDeliveryPointsInBoundingBoxWorker from '@/workers/filterDeliveryPointsInBoundingBox?worker'
 
-    import type { CdekCoordinates } from '#/api.d'
+    import type { CdekCoordinates, CdekDeliveryPoint } from '#/api.d'
 
     let {
         apiUrl,
@@ -86,7 +86,7 @@
         })
     }
 
-    const filterDeliveryPointsInBoundingBoxDebounced = useDebounce(
+    const filterDeliveryPointsInBoundingBoxDebounced = debounce(
         filterDeliveryPointsInBoundingBox,
         500
     )

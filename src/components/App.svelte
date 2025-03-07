@@ -30,6 +30,7 @@
     let cdekApiDeliveryPointsComponent: CdekApiDeliveryPoints | undefined = $state()
     let yandexMapComponent: YandexMap | undefined = $state()
     let geocoderComponent: Geocoder | undefined = $state()
+    let deliveryPointsListComponent: DeliveryPointsList | undefined = $state()
 
     let yandexMapsApiIsLoaded = $state(false)
     let bounds: number[][] | undefined = $state()
@@ -83,13 +84,20 @@
             {apiUrl}
             {bounds}
             onAddedDeliveryPoints={yandexMapComponent?.addDeliveryPoints}
-            onRemovedDeliveryPoints={yandexMapComponent?.removeDeliveryPoints}
+            onRemovedDeliveryPoints={(removed) => {
+                deliveryPointsInList = []
+                yandexMapComponent?.removeDeliveryPoints(removed)
+                deliveryPointsListComponent &&
+                    cdekApiDeliveryPointsComponent?.loadMoreDeliveryPoints()
+            }}
         />
 
         <CdekApiDeliveryPoints
             bind:this={cdekApiDeliveryPointsComponent}
             bind:activeDeliveryPoint
             bind:deliveryPointComponentIsVisible
+            bind:deliveryPointsInList
+            bind:deliveryPointsCoordinates
             {apiUrl}
         />
 
@@ -131,7 +139,12 @@
                             {onDeliveryPointSelected}
                         />
                     {:else if deliveryPointsListComponentIsVisible}
-                        <DeliveryPointsList bind:deliveryPointsInList />
+                        <DeliveryPointsList
+                            bind:this={deliveryPointsListComponent}
+                            bind:deliveryPointsCoordinates
+                            bind:deliveryPointsInList
+                            onLoadMore={cdekApiDeliveryPointsComponent.loadMoreDeliveryPoints}
+                        />
                     {/if}
                 </Sidebar>
             {/if}
