@@ -2,6 +2,16 @@
 
 import { CdekDeliveryPointType } from '#/api'
 
+export interface CdekFilters {
+    isPickupPoint: boolean
+    isPostamat: boolean
+
+    hasCash: boolean
+    hasCard: boolean
+
+    hasFittingRoom: boolean
+}
+
 export interface CdekCoordinates {
     deliveryPointId: string
     latitude: number

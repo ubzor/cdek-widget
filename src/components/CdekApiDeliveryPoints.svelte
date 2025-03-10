@@ -1,7 +1,7 @@
 <script lang="ts">
     import throttle from 'lodash-es/throttle'
 
-    import type { CdekCoordinates, CdekDeliveryPoint } from '#/api.d'
+    import type { CdekCoordinates, CdekDeliveryPoint, CdekFilters } from '#/api.d'
 
     // Привязка пропсов из родительского компонента к локальным переменным.
     // activeDeliveryPoint: выбранная точка доставки (может быть undefined);
@@ -12,12 +12,14 @@
         deliveryPointComponentIsVisible = $bindable(),
         deliveryPointsInList = $bindable(),
         deliveryPointsCoordinates = $bindable(),
+        filters,
         apiUrl
     }: {
         activeDeliveryPoint?: CdekDeliveryPoint
         deliveryPointComponentIsVisible: boolean
         deliveryPointsInList: CdekDeliveryPoint[]
         deliveryPointsCoordinates: CdekCoordinates[]
+        filters: CdekFilters
         apiUrl: string
     } = $props()
 

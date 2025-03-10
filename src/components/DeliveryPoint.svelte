@@ -31,20 +31,20 @@
                 {activeDeliveryPoint.code}
             </span>
         </div>
-        
+
         <!-- Main content: Остальное с прокруткой, если текст большой -->
-        <div class="flex-grow overflow-y-auto mt-4">
+        <div class="flex flex-col gap-2 flex-grow overflow-y-auto">
             <div class="font-bold text-lg">
                 {activeDeliveryPoint.location.city}, {activeDeliveryPoint.location
                     .address}
             </div>
-            <div class="mt-2">
+            <div>
                 {#each activeDeliveryPoint.workTime.split(', ') as time}
                     <div>{time}</div>
                 {/each}
             </div>
             <button
-                class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer"
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer"
                 disabled={selectedDeliveryPointId === activeDeliveryPoint.uuid
                     ? true
                     : undefined}
@@ -61,7 +61,7 @@
                     ? 'Выбрано'
                     : 'Выбрать'}
             </button>
-            <p class="mt-4">
+            <p>
                 Nullam ac sapien a sapien interdum tincidunt. Vestibulum ante ipsum primis
                 in faucibus orci luctus et ultrices posuere cubilia curae. Mauris non nisl
                 quis nisi eleifend interdum. Suspendisse potenti. In hac habitasse platea

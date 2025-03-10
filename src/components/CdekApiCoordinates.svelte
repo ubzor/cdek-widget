@@ -10,17 +10,19 @@
     import MergeDeliveryPointsArrayWorker from '@/workers/mergeDeliveryPointsArrays?worker'
     import FilterDeliveryPointsInBoundingBoxWorker from '@/workers/filterDeliveryPointsInBoundingBox?worker'
 
-    import type { CdekCoordinates, CdekDeliveryPoint } from '#/api.d'
+    import type { CdekCoordinates, CdekFilters } from '#/api.d'
 
     let {
         apiUrl,
         bounds,
+        filters,
         deliveryPointsCoordinates = $bindable(),
         onAddedDeliveryPoints,
         onRemovedDeliveryPoints
     }: {
         apiUrl: string
         bounds?: number[][]
+        filters: CdekFilters
         deliveryPointsCoordinates: CdekCoordinates[]
         onAddedDeliveryPoints?: (added: object[]) => void
         onRemovedDeliveryPoints?: (removed: string[]) => void
@@ -91,7 +93,9 @@
         500
     )
 
-    export const getDeliveryPointsInBoundingBox = async (bounds: number[][]) => {
+    export const getDeliveryPoints = async () => {
+        if (!bounds) return
+
         if (isFetchingDeliveryPoints) {
             abortController.abort()
             abortController = new AbortController()
@@ -121,11 +125,18 @@
             1: [maxLatitude, maxLongitude]
         } = bounds
 
+        const activeFilters = Object.fromEntries(
+            Object.entries(filters)
+                .filter(([_key, value]) => !value)
+                .map(([key, value]) => [key, value ? 'true' : 'false'])
+        ) as Record<keyof CdekFilters, 'true' | 'false'>
+
         const params = new URLSearchParams({
             minLongitude: minLongitude.toString(),
             maxLatitude: maxLatitude.toString(),
             maxLongitude: maxLongitude.toString(),
-            minLatitude: minLatitude.toString()
+            minLatitude: minLatitude.toString(),
+            ...activeFilters
         })
 
         let response: Response

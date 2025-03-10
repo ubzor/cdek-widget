@@ -1,18 +1,24 @@
 <script lang="ts">
     import { onMount } from 'svelte'
 
-    import type { Map, ObjectManager } from 'yandex-maps'
+    import type { Map, ObjectManager, control } from 'yandex-maps'
 
     import type { CdekWidgetOptions } from '#/index.d'
 
     let {
         bounds = $bindable(),
-        onGetDeliveryPointsInBoundingBox,
+        deliveryPointComponentIsVisible = $bindable(),
+        deliveryPointsListComponentIsVisible = $bindable(),
+        filtersComponentIsVisible = $bindable(),
+        onUpdateDeliveryPoints,
         onGetDeliveryPointById,
         onReady
     }: {
         bounds?: number[][]
-        onGetDeliveryPointsInBoundingBox: (bounds: number[][]) => void
+        deliveryPointComponentIsVisible: boolean
+        deliveryPointsListComponentIsVisible: boolean
+        filtersComponentIsVisible: boolean
+        onUpdateDeliveryPoints: () => void
         onGetDeliveryPointById?: (deliveryPointId: string) => void
         onReady: CdekWidgetOptions['onReady']
     } = $props()
@@ -20,27 +26,16 @@
     let mapContainer: HTMLDivElement
     let map: Map
     let objectManager: ObjectManager
+    let listButton: control.Button
+    let filtersButton: control.Button
 
-    export const initMap = async () => {
-        map = new window.ymaps.Map(mapContainer, {
-            center: [55.733842, 37.588144],
-            zoom: 10,
-            controls: []
-        })
-
+    const initGeoManager = () => {
         objectManager = new window.ymaps.ObjectManager({
             clusterize: true,
             geoObjectOpenBalloonOnClick: false
         })
 
-        map.geoObjects.add(objectManager)
-
-        map.events.add('actionend', (_event) => {
-            bounds = map.getBounds()
-            onGetDeliveryPointsInBoundingBox(bounds)
-        })
-
-        map.geoObjects.events.add('click', async (event) => {
+        objectManager.events.add('click', async (event) => {
             const deliveryPointId = event.get('objectId')
 
             if (!deliveryPointId || deliveryPointId?.startsWith('__cluster__')) return
@@ -54,7 +49,63 @@
             onGetDeliveryPointById && onGetDeliveryPointById(deliveryPointId)
         })
 
-        onGetDeliveryPointsInBoundingBox(map.getBounds())
+        map.geoObjects.add(objectManager)
+    }
+
+    const initListButton = () => {
+        listButton = new window.ymaps.control.Button({
+            data: {
+                title: 'Показать список пунктов выдачи',
+                image: '/list.svg'
+            },
+            options: { selectOnClick: false }
+        })
+
+        listButton.events.add('click', () => {
+            deliveryPointComponentIsVisible = false
+            deliveryPointsListComponentIsVisible = true
+            filtersComponentIsVisible = false
+        })
+
+        map.controls.add(listButton, { float: 'right' })
+    }
+
+    const initFiltersButton = () => {
+        filtersButton = new window.ymaps.control.Button({
+            data: {
+                title: 'Фильтры',
+                image: '/filters.svg'
+            },
+            options: { selectOnClick: false }
+        })
+
+        filtersButton.events.add('click', () => {
+            deliveryPointComponentIsVisible = false
+            deliveryPointsListComponentIsVisible = false
+            filtersComponentIsVisible = true
+        })
+
+        map.controls.add(filtersButton, { float: 'right' })
+    }
+
+    const initMap = async () => {
+        map = new window.ymaps.Map(mapContainer, {
+            center: [55.733842, 37.588144],
+            zoom: 10,
+            controls: ['geolocationControl', 'zoomControl']
+        })
+
+        initGeoManager()
+        initListButton()
+        initFiltersButton()
+
+        map.events.add('actionend', (_event) => {
+            bounds = map.getBounds()
+            onUpdateDeliveryPoints()
+        })
+
+        bounds = map.getBounds()
+        onUpdateDeliveryPoints()
 
         onReady && onReady()
     }
