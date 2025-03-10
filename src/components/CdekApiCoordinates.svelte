@@ -28,10 +28,6 @@
         onRemovedDeliveryPoints?: (removed: string[]) => void
     } = $props()
 
-    let isFetchingDeliveryPoints = $state(false)
-    let isParsingDeliveryPoints = $state(false)
-    let isAbortingGettingDeliveryPoints = $state(false)
-
     let queue = new Queue({ autostart: true, concurrency: 1 })
 
     let abortController: AbortController = $state(new AbortController())
@@ -39,9 +35,16 @@
     let mergeWorker: Worker
     let filterWorker: Worker
 
+    let isFetchingDeliveryPoints = $state(false)
+    let isParsingDeliveryPoints = $state(false)
+    let isAbortingGettingDeliveryPoints = $state(false)
+
+    let updatedDeliveryPointsIds: string[] = $state([])
+
     const updateDeliveryPoints = (newPoints: CdekCoordinates[]) => {
         queue.push(async () => {
             const { merged, added } = await new Promise<
+                // TODO: переменная merged и всё связанное с ней имеет неправильную типизацию
                 Record<'merged' | 'added', CdekCoordinates[]>
             >((resolve) => {
                 mergeWorker = new MergeDeliveryPointsArrayWorker()
@@ -56,6 +59,10 @@
                 })
             })
 
+            updatedDeliveryPointsIds = [
+                ...updatedDeliveryPointsIds,
+                ...newPoints.map(({ deliveryPointId }) => deliveryPointId)
+            ]
             deliveryPointsCoordinates = merged
             onAddedDeliveryPoints && onAddedDeliveryPoints(added)
 
@@ -79,7 +86,7 @@
 
                 filterWorker.postMessage({
                     deliveryPoints: $state.snapshot(deliveryPointsCoordinates),
-                    bounds: $state.snapshot(bounds)
+                    updatedDeliveryPointsIds: $state.snapshot(updatedDeliveryPointsIds)
                 })
             })
 
@@ -164,6 +171,7 @@
         let remainder = ''
 
         isParsingDeliveryPoints = true
+        updatedDeliveryPointsIds = []
 
         while (reader) {
             if (isAbortingGettingDeliveryPoints) {

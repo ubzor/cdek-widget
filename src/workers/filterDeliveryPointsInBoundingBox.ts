@@ -1,36 +1,24 @@
 import type { CdekCoordinates } from '#/api.d'
 
-// Отфильтровываем точки доставки, не попадающие в указанный прямоугольник.
+// Фильтруем точки доставки, оставляя только те, идентификаторы которых присутствуют в updatedDeliveryPointsIds.
 self.onmessage = ({
-    data: { deliveryPoints, bounds } // Получаем список точек доставки и границы области фильтрации.
-}: MessageEvent<{ deliveryPoints: CdekCoordinates[]; bounds: number[][] }>) => {
-    // Извлекаем минимальные и максимальные координаты из массива границ.
-    // bounds[0] содержит [minLatitude, minLongitude],
-    // bounds[1] содержит [maxLatitude, maxLongitude].
-    const {
-        0: [minLatitude, minLongitude],
-        1: [maxLatitude, maxLongitude]
-    } = bounds
-
-    // Применяем метод reduce для группировки точек доставки:
-    // filtered - точки, попавшие в указанный прямоугольник,
-    // removed - идентификаторы тех точек, которые вне области.
+    data: { deliveryPoints, updatedDeliveryPointsIds } // Получаем список точек доставки и список валидных идентификаторов.
+}: MessageEvent<{
+    deliveryPoints: CdekCoordinates[]
+    updatedDeliveryPointsIds: string[]
+}>) => {
+    // Группируем точки доставки с использованием reduce.
+    // filtered - точки с координатами, идентификаторы которых есть в updatedDeliveryPointsIds,
+    // removed - идентификаторы точек, которые отсутствуют в updatedDeliveryPointsIds.
     const { filtered, removed } = deliveryPoints.reduce(
         ({ filtered, removed }, { deliveryPointId, longitude, latitude }) => {
-            // Если точка доставки находится в пределах заданных границ, добавляем её в filtered.
-            // Условие проверяет, что долгота и широта лежат между минимальными и максимальными значениями.
-            if (
-                longitude >= minLongitude &&
-                longitude <= maxLongitude &&
-                latitude >= minLatitude &&
-                latitude <= maxLatitude
-            ) {
+            // Если идентификатор точки доставки содержится в списке, добавляем всю точку в filtered.
+            if (updatedDeliveryPointsIds.includes(deliveryPointId)) {
                 filtered.push({ deliveryPointId, longitude, latitude })
             } else {
-                // Если точка не удовлетворяет условию, сохраняем только её идентификатор в removed.
+                // Если условие не выполняется, записываем идентификатор для списка removed.
                 removed.push(deliveryPointId)
             }
-            // Возвращаем аккумулятор с обновёнными массивами для использования в следующей итерации.
             return { filtered, removed }
         },
         // Инициализируем аккумулятор с пустыми массивами.
@@ -40,7 +28,6 @@ self.onmessage = ({
         }
     )
 
-    // Отправляем обратно результат работы воркера.
-    // filtered содержит объекты с координатами точек, а removed – идентификаторы исключенных точек.
+    // Отправляем результат работы воркера.
     self.postMessage({ filtered, removed })
 }
