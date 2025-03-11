@@ -56,7 +56,7 @@
         listButton = new window.ymaps.control.Button({
             data: {
                 title: 'Показать список пунктов выдачи',
-                image: '/list.svg'
+                image: '/images/list-icon.svg'
             },
             options: { selectOnClick: false }
         })
@@ -74,7 +74,7 @@
         filtersButton = new window.ymaps.control.Button({
             data: {
                 title: 'Фильтры',
-                image: '/filters.svg'
+                image: '/images/filters-icon.svg'
             },
             options: { selectOnClick: false }
         })
@@ -136,4 +136,14 @@
     })
 </script>
 
-<div bind:this={mapContainer} class="h-full w-full"></div>
+<div bind:this={mapContainer} class="map-container h-full w-full"></div>
+
+<style>
+    .map-container {
+        :global {
+            .ymaps-2-1-79-ground-pane {
+                filter: grayscale(1);
+            }
+        }
+    }
+</style>

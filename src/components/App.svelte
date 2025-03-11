@@ -6,8 +6,6 @@
     import YandexMap from '@/components/YandexMap.svelte'
     import YandexMapLoader from '@/components/YandexMapLoader.svelte'
 
-    import Loading from '@/components/Loading.svelte'
-
     import Sidebar from '@/components/Sidebar.svelte'
     import DeliveryPoint from '@/components/DeliveryPoint.svelte'
     import DeliveryPointsList from '@/components/DeliveryPointsList.svelte'
@@ -49,7 +47,7 @@
         isPostamat: true,
         hasCash: true,
         hasCard: true,
-        hasFittingRoom: true
+        hasFittingRoom: false
     })
 
     export const selectDeliveryPointByCode = async (code: string) => {
@@ -75,6 +73,8 @@
 
     export const clearSelection = () => {
         deliveryPointComponentIsVisible = false
+        deliveryPointsListComponentIsVisible = false
+        filtersComponentIsVisible = false
         selectedDeliveryPointId = undefined
     }
 
@@ -83,7 +83,7 @@
     }
 </script>
 
-<div class="w-[100%] h-[400px]">
+<div class="w-full h-full border border-gray-300 rounded shadow overflow-hidden">
     <YandexMapLoader bind:yandexMapsApiIsLoaded {yandexMapsApiKey} />
 
     {#if yandexMapsApiIsLoaded}
@@ -142,11 +142,10 @@
                         filtersComponentIsVisible = false
                     }}
                 >
-                    {#if deliveryPointComponentIsVisible}
+                    {#if deliveryPointComponentIsVisible && activeDeliveryPoint}
                         <DeliveryPoint
                             bind:activeDeliveryPoint
                             bind:selectedDeliveryPointId
-                            bind:deliveryPointComponentIsVisible
                             {onDeliveryPointSelected}
                         />
                     {:else if deliveryPointsListComponentIsVisible}
@@ -155,6 +154,18 @@
                             bind:deliveryPointsCoordinates
                             bind:deliveryPointsInList
                             onLoadMore={cdekApiDeliveryPointsComponent.loadMoreDeliveryPoints}
+                            onSetActiveDeliveryPoint={async (id) => {
+                                cdekApiDeliveryPointsComponent?.getDeliveryPointById(id)
+
+                                const deliveryPoint = deliveryPointsCoordinates.find(
+                                    ({ deliveryPointId }) => deliveryPointId === id
+                                )
+                                deliveryPoint &&
+                                    yandexMapComponent?.setMapCenterAndZoom(
+                                        [deliveryPoint.latitude, deliveryPoint.longitude],
+                                        17
+                                    )
+                            }}
                         />
                     {:else if filtersComponentIsVisible}
                         <Filters

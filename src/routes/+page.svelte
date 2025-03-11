@@ -42,7 +42,7 @@
 </script>
 
 <main class="p-4">
-    <div bind:this={mapContainer}></div>
+    <div bind:this={mapContainer} class="w-full h-[400px]"></div>
 
     <div class="flex gap-4 mt-4">
         <textarea class="flex-grow border border-gray-300 h-[200px] p-2" disabled

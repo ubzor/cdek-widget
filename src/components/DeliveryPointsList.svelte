@@ -8,11 +8,13 @@
     let {
         deliveryPointsInList = $bindable(),
         deliveryPointsCoordinates = $bindable(),
-        onLoadMore
+        onLoadMore,
+        onSetActiveDeliveryPoint
     }: {
         deliveryPointsInList: CdekDeliveryPoint[]
         deliveryPointsCoordinates: CdekCoordinates[]
         onLoadMore: () => Promise<void>
+        onSetActiveDeliveryPoint: (deliveryPointId: string) => void
     } = $props()
 
     let virtualList: VList<CdekDeliveryPoint> | undefined = $state()
@@ -34,14 +36,12 @@
     })
 </script>
 
-<div class="flex flex-col h-full">
+<div class="flex flex-col h-full text-sm">
     <!-- Header -->
-    <div class="flex justify-between items-center">
-        <span class="text-lg font-semibold">Пункты выдачи</span>
-    </div>
+    <span class="text-base font-semibold">Пункты выдачи</span>
 
     <!-- Main content -->
-    <div class="flex-1 min-h-0 mt-4">
+    <div class="flex-1 min-h-0 mt-1">
         <VList
             bind:this={virtualList}
             class="h-full v-full"
@@ -49,12 +49,46 @@
             onscroll={onScroll}
         >
             {#snippet children(item: CdekDeliveryPoint, _index)}
-                <div class="p-2 bg-gray-100">
-                    <div>{CdekDeliveryPointType[item.type]} {item.code}</div>
-                    <div>{item.location.city}, {item.location.address}</div>
-                    <div>
+                <!-- svelte-ignore a11y_click_events_have_key_events -->
+                <div
+                    class="my-0.5 border border-gray-200 px-2 py-1 rounded cursor-pointer flex flex-col gap-0.5"
+                    role="button"
+                    tabindex="0"
+                    onclick={() => onSetActiveDeliveryPoint(item.uuid)}
+                >
+                    <!-- svelte-ignore a11y_missing_attribute -->
+                    <a
+                        class="text-sm font-medium truncate"
+                        title={`${item.location.city}, ${item.location.address}`}
+                    >
+                        {item.location.city}, {item.location.address}
+                    </a>
+
+                    <!-- Updated: Wrap type and code in flex container -->
+                    <div class="flex items-center gap-1 text-sm">
+                        <span class="text-[11px] font-semibold uppercase"
+                            >{CdekDeliveryPointType[item.type]}</span
+                        >
+                        <span
+                            class="bg-emerald-100 text-emerald-800 rounded-lg h-[14px] px-[0.3rem] text-[11px] font-semibold leading-[14px]"
+                        >
+                            {item.code}
+                        </span>
+                    </div>
+
+                    <!-- Updated: work time style modified -->
+                    <div class="flex gap-1 items-center">
+                        <img
+                            src="/images/clock-icon.svg"
+                            alt="Часы работы"
+                            class="w-[12px] h-[12px]"
+                        />
                         {#each item.workTime.split(', ') as time}
-                            <div>{time}</div>
+                            <div
+                                class="text-[11px] font-bold text-gray-400 leading-[16px]"
+                            >
+                                {time}
+                            </div>
                         {/each}
                     </div>
                 </div>

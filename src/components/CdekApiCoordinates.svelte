@@ -133,9 +133,7 @@
         } = bounds
 
         const activeFilters = Object.fromEntries(
-            Object.entries(filters)
-                .filter(([_key, value]) => !value)
-                .map(([key, value]) => [key, value ? 'true' : 'false'])
+            Object.entries(filters).map(([key, value]) => [key, value ? 'true' : 'false'])
         ) as Record<keyof CdekFilters, 'true' | 'false'>
 
         const params = new URLSearchParams({

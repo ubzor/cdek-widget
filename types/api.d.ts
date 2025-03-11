@@ -21,6 +21,7 @@ export interface CdekCoordinates {
 export interface CdekDeliveryPoint {
     uuid: string
     code: string
+
     location: {
         city: string
         address: string
@@ -28,6 +29,12 @@ export interface CdekDeliveryPoint {
         latitude?: number
         longitude?: number
     }
+
     type: keyof typeof CdekDeliveryPointType
     workTime: string
+    addressComment?: string
+
+    haveCash?: boolean
+    haveCashless?: boolean
+    isDressingRoom?: boolean
 }
