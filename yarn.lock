@@ -692,6 +692,11 @@ postcss-prefix-selector@^2.1.0:
   resolved "https://registry.yarnpkg.com/postcss-prefix-selector/-/postcss-prefix-selector-2.1.0.tgz#4dfd189d7247b972a622bd9424fcc9a4e93b4884"
   integrity sha512-UJjQ5CJZuvDGbrGzanqZyH1R/dUSxil/IxfQyeUg+POmZGhG4nz4FERhrgy75+JiUESw0ws3+GxXofapOBbdkg==
 
+postcss-safe-important@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/postcss-safe-important/-/postcss-safe-important-2.0.1.tgz#d5072a890e5388e98adc2d104849d9996ee51244"
+  integrity sha512-MkaDFrKOdpQT+8OQzRJDCLlSVR+JXgj0SYU8MbuAN1NRcRofmrpWpK5okAWIA7MgDI4FEQrXe6wOcieq6tNapA==
+
 postcss@^8.4.27, postcss@^8.5.2, postcss@^8.5.3:
   version "8.5.3"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.3.tgz#1463b6f1c7fb16fe258736cba29a2de35237eafb"
