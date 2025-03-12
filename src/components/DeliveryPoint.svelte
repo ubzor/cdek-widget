@@ -2,21 +2,19 @@
     import { CdekDeliveryPointType } from '#/api'
 
     import type { CdekDeliveryPoint } from '#/api.d'
-    import type { CdekWidgetOptions } from '#/index.d'
 
     // Получаем параметры через $props() и двустороннюю привязку через $bindable().
     // activeDeliveryPoint - объект точки доставки (может отсутствовать).
     // selectedDeliveryPointId - ID выбранной точки доставки.
-    // sidebarIsOpened - булев флаг: панель открыта.
-    // onDeliveryPointSelected - callback уведомления родителя.
+    // onSelectDeliveryPoint - callback уведомления родителя.
     let {
-        activeDeliveryPoint = $bindable(),
-        selectedDeliveryPointId = $bindable(),
-        onDeliveryPointSelected
+        activeDeliveryPoint,
+        selectedDeliveryPointId,
+        onSelectDeliveryPoint
     }: {
         activeDeliveryPoint: CdekDeliveryPoint
         selectedDeliveryPointId?: string
-        onDeliveryPointSelected: CdekWidgetOptions['onDeliveryPointSelected']
+        onSelectDeliveryPoint: (deliveryPointId: string) => void
     } = $props()
 </script>
 
@@ -86,12 +84,7 @@
                 ? true
                 : undefined}
             onclick={() => {
-                if (!activeDeliveryPoint) return
-
-                // Сохраняем ID точки доставки и вызываем callback уведомления.
-                selectedDeliveryPointId = activeDeliveryPoint.uuid
-                onDeliveryPointSelected &&
-                    onDeliveryPointSelected($state.snapshot(activeDeliveryPoint))
+                onSelectDeliveryPoint(activeDeliveryPoint.uuid)
             }}
         >
             {selectedDeliveryPointId === activeDeliveryPoint.uuid ? 'Выбрано' : 'Выбрать'}

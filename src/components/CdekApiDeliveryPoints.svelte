@@ -26,12 +26,22 @@
     // Функция для получения точки доставки по идентификатору.
     // Выполняется GET-запрос на адрес {apiUrl}/delivery-points/{deliveryPointId}.
     // При успешном ответе, обновляется activeDeliveryPoint и открывается сайдбар.
-    export const getDeliveryPointById = async (deliveryPointId: string) => {
+    export const getDeliveryPointById = async (
+        deliveryPointId: string,
+        allFields: boolean = false
+    ) => {
         try {
-            // Отправка GET-запроса для получения данных точки доставки по ID.
-            const response = await fetch(`${apiUrl}/delivery-points/${deliveryPointId}`, {
-                method: 'GET'
+            const params = new URLSearchParams({
+                ...(allFields && { allFields: 'true' })
             })
+
+            // Отправка GET-запроса для получения данных точки доставки по ID.
+            const response = await fetch(
+                `${apiUrl}/delivery-points/${deliveryPointId}?${params}`,
+                {
+                    method: 'GET'
+                }
+            )
 
             // Преобразование ответа в JSON и сохранение в activeDeliveryPoint.
             activeDeliveryPoint = await response.json()
@@ -47,12 +57,22 @@
     // Функция для получения точки доставки по коду.
     // Выполняется GET-запрос на адрес {apiUrl}/delivery-points/code/{code}.
     // По успешном ответе, activeDeliveryPoint обновляется и сайдбар открывается.
-    export const getDeliveryPointByCode = async (code: string) => {
+    export const getDeliveryPointByCode = async (
+        code: string,
+        allFields: boolean = false
+    ) => {
         try {
-            // Отправка GET-запроса для получения данных точки доставки по коду.
-            const response = await fetch(`${apiUrl}/delivery-points/code/${code}`, {
-                method: 'GET'
+            const params = new URLSearchParams({
+                ...(allFields && { allFields: 'true' })
             })
+
+            // Отправка GET-запроса для получения данных точки доставки по коду.
+            const response = await fetch(
+                `${apiUrl}/delivery-points/code/${code}?${params}`,
+                {
+                    method: 'GET'
+                }
+            )
 
             // Преобразование ответа в JSON и сохранение в activeDeliveryPoint.
             activeDeliveryPoint = await response.json()

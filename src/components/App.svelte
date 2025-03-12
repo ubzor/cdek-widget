@@ -54,7 +54,7 @@
     let cdekApiCoordinatesIsLoading = $state(false)
 
     export const selectDeliveryPointByCode = async (code: string) => {
-        await cdekApiDeliveryPointsComponent?.getDeliveryPointByCode(code)
+        await cdekApiDeliveryPointsComponent?.getDeliveryPointByCode(code, true)
 
         activeDeliveryPoint?.location.latitude &&
             activeDeliveryPoint?.location.longitude &&
@@ -151,9 +151,18 @@
                 >
                     {#if deliveryPointComponentIsVisible && activeDeliveryPoint}
                         <DeliveryPoint
-                            bind:activeDeliveryPoint
-                            bind:selectedDeliveryPointId
-                            {onDeliveryPointSelected}
+                            {selectedDeliveryPointId}
+                            {activeDeliveryPoint}
+                            onSelectDeliveryPoint={async (deliveryPointId) => {
+                                selectedDeliveryPointId = deliveryPointId
+                                await cdekApiDeliveryPointsComponent?.getDeliveryPointById(
+                                    deliveryPointId,
+                                    true
+                                )
+                                activeDeliveryPoint &&
+                                    onDeliveryPointSelected &&
+                                    onDeliveryPointSelected(activeDeliveryPoint)
+                            }}
                         />
                     {:else if deliveryPointsListComponentIsVisible}
                         <DeliveryPointsList
