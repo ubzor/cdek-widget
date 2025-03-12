@@ -86,111 +86,118 @@
     }
 </script>
 
-<div class="w-full h-full border border-gray-300 rounded shadow overflow-hidden">
-    <YandexMapLoader bind:yandexMapsApiIsLoaded {yandexMapsApiKey} />
+<div class="cdek-widget" style="width: 100%; height: 100%;">
+    <div class="w-full h-full border border-gray-300 rounded shadow overflow-hidden">
+        <YandexMapLoader bind:yandexMapsApiIsLoaded {yandexMapsApiKey} />
 
-    {#if yandexMapsApiIsLoaded}
-        <CdekApiCoordinates
-            bind:this={cdekApiCoordinatesComponent}
-            bind:deliveryPointsCoordinates
-            bind:cdekApiCoordinatesIsLoading
-            {apiUrl}
-            {bounds}
-            {filters}
-            onAddedDeliveryPoints={yandexMapComponent?.addDeliveryPoints}
-            onRemovedDeliveryPoints={(removed) => {
-                deliveryPointsInList = []
-                yandexMapComponent?.removeDeliveryPoints(removed)
-                deliveryPointsListComponent &&
-                    cdekApiDeliveryPointsComponent?.loadMoreDeliveryPoints()
-            }}
-        />
+        {#if yandexMapsApiIsLoaded}
+            <CdekApiCoordinates
+                bind:this={cdekApiCoordinatesComponent}
+                bind:deliveryPointsCoordinates
+                bind:cdekApiCoordinatesIsLoading
+                {apiUrl}
+                {bounds}
+                {filters}
+                onAddedDeliveryPoints={yandexMapComponent?.addDeliveryPoints}
+                onRemovedDeliveryPoints={(removed) => {
+                    deliveryPointsInList = []
+                    yandexMapComponent?.removeDeliveryPoints(removed)
+                    deliveryPointsListComponent &&
+                        cdekApiDeliveryPointsComponent?.loadMoreDeliveryPoints()
+                }}
+            />
 
-        <CdekApiDeliveryPoints
-            bind:this={cdekApiDeliveryPointsComponent}
-            bind:activeDeliveryPoint
-            bind:deliveryPointComponentIsVisible
-            bind:deliveryPointsInList
-            bind:deliveryPointsCoordinates
-            {filters}
-            {apiUrl}
-        />
+            <CdekApiDeliveryPoints
+                bind:this={cdekApiDeliveryPointsComponent}
+                bind:activeDeliveryPoint
+                bind:deliveryPointComponentIsVisible
+                bind:deliveryPointsInList
+                bind:deliveryPointsCoordinates
+                {filters}
+                {apiUrl}
+            />
 
-        <Geocoder
-            bind:this={geocoderComponent}
-            {yandexMapsApiKey}
-            onGetCityBoundingBox={(bounds) => {
-                yandexMapComponent?.setMapBounds(bounds)
-            }}
-        />
+            <Geocoder
+                bind:this={geocoderComponent}
+                {yandexMapsApiKey}
+                onGetCityBoundingBox={(bounds) => {
+                    yandexMapComponent?.setMapBounds(bounds)
+                }}
+            />
 
-        <div class="flex w-full h-full">
-            <div class="h-full w-full min-w-0 shrink-1 overflow-hidden relative">
-                <YandexMap
-                    bind:this={yandexMapComponent}
-                    bind:bounds
-                    bind:deliveryPointComponentIsVisible
-                    bind:deliveryPointsListComponentIsVisible
-                    bind:filtersComponentIsVisible
-                    onUpdateDeliveryPoints={cdekApiCoordinatesComponent?.getDeliveryPoints}
-                    onGetDeliveryPointById={cdekApiDeliveryPointsComponent?.getDeliveryPointById}
-                    {onReady}
-                />
-                {#if cdekApiCoordinatesIsLoading}
-                    <Loading />
+            <div class="flex w-full h-full">
+                <div class="h-full w-full min-w-0 shrink-1 overflow-hidden relative">
+                    <YandexMap
+                        bind:this={yandexMapComponent}
+                        bind:bounds
+                        bind:deliveryPointComponentIsVisible
+                        bind:deliveryPointsListComponentIsVisible
+                        bind:filtersComponentIsVisible
+                        onUpdateDeliveryPoints={cdekApiCoordinatesComponent?.getDeliveryPoints}
+                        onGetDeliveryPointById={cdekApiDeliveryPointsComponent?.getDeliveryPointById}
+                        {onReady}
+                    />
+                    {#if cdekApiCoordinatesIsLoading}
+                        <Loading />
+                    {/if}
+                </div>
+                {#if deliveryPointComponentIsVisible || deliveryPointsListComponentIsVisible || filtersComponentIsVisible}
+                    <Sidebar
+                        onClose={() => {
+                            activeDeliveryPoint = undefined
+                            deliveryPointComponentIsVisible = false
+                            deliveryPointsListComponentIsVisible = false
+                            filtersComponentIsVisible = false
+                        }}
+                    >
+                        {#if deliveryPointComponentIsVisible && activeDeliveryPoint}
+                            <DeliveryPoint
+                                {selectedDeliveryPointId}
+                                {activeDeliveryPoint}
+                                onSelectDeliveryPoint={async (deliveryPointId) => {
+                                    selectedDeliveryPointId = deliveryPointId
+                                    await cdekApiDeliveryPointsComponent?.getDeliveryPointById(
+                                        deliveryPointId,
+                                        true
+                                    )
+                                    activeDeliveryPoint &&
+                                        onDeliveryPointSelected &&
+                                        onDeliveryPointSelected(activeDeliveryPoint)
+                                }}
+                            />
+                        {:else if deliveryPointsListComponentIsVisible}
+                            <DeliveryPointsList
+                                bind:this={deliveryPointsListComponent}
+                                bind:deliveryPointsCoordinates
+                                bind:deliveryPointsInList
+                                onLoadMore={cdekApiDeliveryPointsComponent.loadMoreDeliveryPoints}
+                                onSetActiveDeliveryPoint={async (id) => {
+                                    cdekApiDeliveryPointsComponent?.getDeliveryPointById(
+                                        id
+                                    )
+
+                                    const deliveryPoint = deliveryPointsCoordinates.find(
+                                        ({ deliveryPointId }) => deliveryPointId === id
+                                    )
+                                    deliveryPoint &&
+                                        yandexMapComponent?.setMapCenterAndZoom(
+                                            [
+                                                deliveryPoint.latitude,
+                                                deliveryPoint.longitude
+                                            ],
+                                            17
+                                        )
+                                }}
+                            />
+                        {:else if filtersComponentIsVisible}
+                            <Filters
+                                bind:filters
+                                onUpdateDeliveryPoints={cdekApiCoordinatesComponent?.getDeliveryPoints}
+                            />
+                        {/if}
+                    </Sidebar>
                 {/if}
             </div>
-            {#if deliveryPointComponentIsVisible || deliveryPointsListComponentIsVisible || filtersComponentIsVisible}
-                <Sidebar
-                    onClose={() => {
-                        activeDeliveryPoint = undefined
-                        deliveryPointComponentIsVisible = false
-                        deliveryPointsListComponentIsVisible = false
-                        filtersComponentIsVisible = false
-                    }}
-                >
-                    {#if deliveryPointComponentIsVisible && activeDeliveryPoint}
-                        <DeliveryPoint
-                            {selectedDeliveryPointId}
-                            {activeDeliveryPoint}
-                            onSelectDeliveryPoint={async (deliveryPointId) => {
-                                selectedDeliveryPointId = deliveryPointId
-                                await cdekApiDeliveryPointsComponent?.getDeliveryPointById(
-                                    deliveryPointId,
-                                    true
-                                )
-                                activeDeliveryPoint &&
-                                    onDeliveryPointSelected &&
-                                    onDeliveryPointSelected(activeDeliveryPoint)
-                            }}
-                        />
-                    {:else if deliveryPointsListComponentIsVisible}
-                        <DeliveryPointsList
-                            bind:this={deliveryPointsListComponent}
-                            bind:deliveryPointsCoordinates
-                            bind:deliveryPointsInList
-                            onLoadMore={cdekApiDeliveryPointsComponent.loadMoreDeliveryPoints}
-                            onSetActiveDeliveryPoint={async (id) => {
-                                cdekApiDeliveryPointsComponent?.getDeliveryPointById(id)
-
-                                const deliveryPoint = deliveryPointsCoordinates.find(
-                                    ({ deliveryPointId }) => deliveryPointId === id
-                                )
-                                deliveryPoint &&
-                                    yandexMapComponent?.setMapCenterAndZoom(
-                                        [deliveryPoint.latitude, deliveryPoint.longitude],
-                                        17
-                                    )
-                            }}
-                        />
-                    {:else if filtersComponentIsVisible}
-                        <Filters
-                            bind:filters
-                            onUpdateDeliveryPoints={cdekApiCoordinatesComponent?.getDeliveryPoints}
-                        />
-                    {/if}
-                </Sidebar>
-            {/if}
-        </div>
-    {/if}
+        {/if}
+    </div>
 </div>

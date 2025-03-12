@@ -1,6 +1,6 @@
 {
     "name": "cdek-widget",
-    "version": "0.0.23",
+    "version": "0.0.24",
     "license": "MIT",
     "type": "module",
     "files": [
@@ -31,6 +31,8 @@
         "@types/node": "^22.13.9",
         "@types/yandex-maps": "^2.1.36",
         "lodash-es": "^4.17.21",
+        "postcss": "^8.5.3",
+        "postcss-prefix-selector": "^2.1.0",
         "prettier": "^3.5.2",
         "prettier-plugin-svelte": "^3.3.3",
         "queue": "^7.0.0",
