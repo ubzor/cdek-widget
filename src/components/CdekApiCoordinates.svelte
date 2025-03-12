@@ -7,9 +7,6 @@
 
     import { parseJsonFromUintArray } from '@/utils/parseJsonFromUintArray'
 
-    import MergeDeliveryPointsArrayWorker from '@/workers/mergeDeliveryPointsArrays?worker'
-    import FilterDeliveryPointsInBoundingBoxWorker from '@/workers/filterDeliveryPointsInBoundingBox?worker'
-
     import type { CdekCoordinates, CdekFilters } from '#/api.d'
 
     let {
@@ -38,8 +35,14 @@
 
     let abortController: AbortController = $state(new AbortController())
 
-    let mergeWorker: Worker
-    let filterWorker: Worker
+    let mergeWorker = new Worker(
+        new URL('../workers/mergeDeliveryPointsArrays?worker', import.meta.url),
+        { type: 'module' }
+    )
+    let filterWorker = new Worker(
+        new URL('../workers/filterDeliveryPointsInBoundingBox?worker', import.meta.url),
+        { type: 'module' }
+    )
 
     let isFetchingDeliveryPoints = $state(false)
     let isParsingDeliveryPoints = $state(false)
@@ -53,8 +56,6 @@
                 // TODO: переменная merged и всё связанное с ней имеет неправильную типизацию
                 Record<'merged' | 'added', CdekCoordinates[]>
             >((resolve) => {
-                mergeWorker = new MergeDeliveryPointsArrayWorker()
-
                 mergeWorker.onmessage = (event) => {
                     resolve(event.data)
                 }
@@ -84,8 +85,6 @@
                 filtered: CdekCoordinates[]
                 removed: string[]
             }>((resolve) => {
-                filterWorker = new FilterDeliveryPointsInBoundingBoxWorker()
-
                 filterWorker.onmessage = (event) => {
                     resolve(event.data)
                 }
