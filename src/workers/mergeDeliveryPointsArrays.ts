@@ -1,4 +1,5 @@
 import type { CdekCoordinates } from '#/api.d'
+import type { GeoObject } from 'ymaps'
 
 // Объединяем два массива точек доставки.
 self.onmessage = ({
@@ -32,6 +33,9 @@ self.onmessage = ({
                     // Здесь координаты переупорядочены: широта выступает первой, затем долгота.
                     // Это соответствует стандартному формату GeoJSON.
                     coordinates: [latitude, longitude]
+                },
+                options: {
+                    iconColor: '#009966' // Emerald 600
                 }
             })
         }

@@ -10,6 +10,7 @@
     import DeliveryPoint from '@/components/DeliveryPoint.svelte'
     import DeliveryPointsList from '@/components/DeliveryPointsList.svelte'
     import Filters from '@/components/Filters.svelte'
+    import Loading from '@/components/Loading.svelte'
 
     import type { CdekCoordinates, CdekDeliveryPoint, CdekFilters } from '#/api.d'
     import type { CdekWidgetOptions } from '#/index.d'
@@ -49,6 +50,8 @@
         hasCard: true,
         hasFittingRoom: false
     })
+
+    let cdekApiCoordinatesIsLoading = $state(false)
 
     export const selectDeliveryPointByCode = async (code: string) => {
         await cdekApiDeliveryPointsComponent?.getDeliveryPointByCode(code)
@@ -90,6 +93,7 @@
         <CdekApiCoordinates
             bind:this={cdekApiCoordinatesComponent}
             bind:deliveryPointsCoordinates
+            bind:cdekApiCoordinatesIsLoading
             {apiUrl}
             {bounds}
             {filters}
@@ -132,6 +136,9 @@
                     onGetDeliveryPointById={cdekApiDeliveryPointsComponent?.getDeliveryPointById}
                     {onReady}
                 />
+                {#if cdekApiCoordinatesIsLoading}
+                    <Loading />
+                {/if}
             </div>
             {#if deliveryPointComponentIsVisible || deliveryPointsListComponentIsVisible || filtersComponentIsVisible}
                 <Sidebar

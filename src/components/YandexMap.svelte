@@ -32,7 +32,21 @@
     const initGeoManager = () => {
         objectManager = new window.ymaps.ObjectManager({
             clusterize: true,
-            geoObjectOpenBalloonOnClick: false
+            geoObjectOpenBalloonOnClick: false,
+            clusterIconLayout: 'default#pieChart',
+            // @ts-ignore
+            clusterIconPieChartRadius: ([{ weight }]: {
+                weight: number
+                color: string
+            }[]) => {
+                return weight.toString().length * 2.5 + 12.5
+            },
+            clusterIconPieChartCoreRadius: ([{ weight }]: {
+                weight: number
+                color: string
+            }[]) => {
+                return weight.toString().length * 2.5 + 7.5
+            }
         })
 
         objectManager.events.add('click', async (event) => {

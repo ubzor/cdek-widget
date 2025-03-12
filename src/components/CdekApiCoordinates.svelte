@@ -17,6 +17,7 @@
         bounds,
         filters,
         deliveryPointsCoordinates = $bindable(),
+        cdekApiCoordinatesIsLoading = $bindable(),
         onAddedDeliveryPoints,
         onRemovedDeliveryPoints
     }: {
@@ -24,11 +25,16 @@
         bounds?: number[][]
         filters: CdekFilters
         deliveryPointsCoordinates: CdekCoordinates[]
+        cdekApiCoordinatesIsLoading: boolean
         onAddedDeliveryPoints?: (added: object[]) => void
         onRemovedDeliveryPoints?: (removed: string[]) => void
     } = $props()
 
     let queue = new Queue({ autostart: true, concurrency: 1 })
+
+    queue.addEventListener('end', () => {
+        cdekApiCoordinatesIsLoading = false
+    })
 
     let abortController: AbortController = $state(new AbortController())
 
@@ -147,6 +153,7 @@
         let response: Response
 
         isFetchingDeliveryPoints = true
+        cdekApiCoordinatesIsLoading = true
 
         try {
             response = await fetch(`${apiUrl}/delivery-points/bounding-box?${params}`, {
