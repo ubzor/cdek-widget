@@ -6,9 +6,14 @@ export default {
             ? [
                   postcssPrefixSelector({
                       prefix: '.cdek-widget', // adjust the prefix as needed
-                      transform: function (prefix, selector, prefixedSelector) {
+                      transform: function (_prefix, selector, prefixedSelector) {
                           // Optionally avoid prefixing keyframes or root selectors
-                          if (selector.startsWith('@')) return selector
+                          if (
+                              selector.startsWith('@') ||
+                              selector.includes(':root') ||
+                              selector.includes(':host')
+                          )
+                              return selector
                           return prefixedSelector
                       }
                   })
