@@ -5,7 +5,7 @@
     import { CdekDeliveryPointType } from '#/api'
     import type { CdekDeliveryPoint, CdekCoordinates } from '#/api.d'
 
-    import clockIconUrl from '../../static/images/clock-icon.svg'
+    import clockIconUrl from '@/images/clock-icon.svg'
 
     let {
         deliveryPointsInList = $bindable(),

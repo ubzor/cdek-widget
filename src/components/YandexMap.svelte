@@ -5,8 +5,8 @@
 
     import type { CdekWidgetOptions } from '#/index.d'
 
-    import filtersIcon from '../../static/images/filters-icon.svg?raw'
-    import listIcon from '../../static/images/list-icon.svg?raw'
+    import filtersIcon from '@/images/filters-icon.svg?raw'
+    import listIcon from '@/images/list-icon.svg?raw'
 
     let {
         bounds = $bindable(),

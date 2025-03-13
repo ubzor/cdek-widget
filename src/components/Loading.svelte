@@ -1,5 +1,5 @@
 <script lang="ts">
-    import loadingIconUrl from '../../static/images/loading-icon.svg'
+    import loadingIconUrl from '@/images/loading-icon.svg'
 </script>
 
 <div class="loading">

@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Snippet } from 'svelte'
 
-    import closeIconUrl from '../../static/images/close-icon.svg'
+    import closeIconUrl from '@/images/close-icon.svg'
 
     // Распаковка свойств, переданных в компонент:
     let {

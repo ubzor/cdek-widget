@@ -2,7 +2,7 @@
     import { CdekDeliveryPointType } from '#/api'
     import type { CdekDeliveryPoint } from '#/api.d'
 
-    import clockIconUrl from '../../static/images/clock-icon.svg'
+    import clockIconUrl from '@/images/clock-icon.svg'
 
     // Получаем параметры через $props() и двустороннюю привязку через $bindable().
     // activeDeliveryPoint - объект точки доставки (может отсутствовать).
