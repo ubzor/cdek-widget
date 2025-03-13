@@ -219,7 +219,7 @@
     }
 
     .cdek-widget__map {
-        @apply h-full w-full min-w-0 shrink-1 overflow-hidden;
+        @apply h-full w-full min-w-0 shrink-1 overflow-hidden relative;
     }
 
     .cdek-widget__map-loading {
