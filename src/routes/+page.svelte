@@ -41,7 +41,7 @@
     })
 </script>
 
-<main class="p-4">
+<div class="p-4">
     <div bind:this={mapContainer} class="w-full h-[400px]"></div>
 
     <div class="flex gap-4 mt-4">
@@ -70,4 +70,4 @@
             >
         </div>
     </div>
-</main>
+</div>

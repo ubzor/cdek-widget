@@ -430,13 +430,6 @@
   dependencies:
     undici-types "~6.20.0"
 
-"@types/postcss-prefix-selector@^1.16.3":
-  version "1.16.3"
-  resolved "https://registry.yarnpkg.com/@types/postcss-prefix-selector/-/postcss-prefix-selector-1.16.3.tgz#bccb876c08b9057d73f5718bf17a0f755a2a8eb4"
-  integrity sha512-YZLPWRkJIrYjwaqojVDXzaRCAEYslRAm8Shznwwn+ZFA4iKQR4LZlS3d+ZMVteFz4iyQnngZZG7k/GIzV1f3mQ==
-  dependencies:
-    postcss "^8.4.27"
-
 "@types/yandex-maps@^2.1.36":
   version "2.1.36"
   resolved "https://registry.yarnpkg.com/@types/yandex-maps/-/yandex-maps-2.1.36.tgz#5c611ff04e58f6cb6ce626dcc8a840cd218d4715"
@@ -687,17 +680,7 @@ picocolors@^1.1.1:
   resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-1.1.1.tgz#3d321af3eab939b083c8f929a1d12cda81c26b6b"
   integrity sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==
 
-postcss-prefix-selector@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/postcss-prefix-selector/-/postcss-prefix-selector-2.1.0.tgz#4dfd189d7247b972a622bd9424fcc9a4e93b4884"
-  integrity sha512-UJjQ5CJZuvDGbrGzanqZyH1R/dUSxil/IxfQyeUg+POmZGhG4nz4FERhrgy75+JiUESw0ws3+GxXofapOBbdkg==
-
-postcss-safe-important@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/postcss-safe-important/-/postcss-safe-important-2.0.1.tgz#d5072a890e5388e98adc2d104849d9996ee51244"
-  integrity sha512-MkaDFrKOdpQT+8OQzRJDCLlSVR+JXgj0SYU8MbuAN1NRcRofmrpWpK5okAWIA7MgDI4FEQrXe6wOcieq6tNapA==
-
-postcss@^8.4.27, postcss@^8.5.2, postcss@^8.5.3:
+postcss@^8.5.2:
   version "8.5.3"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.3.tgz#1463b6f1c7fb16fe258736cba29a2de35237eafb"
   integrity sha512-dle9A3yYxlBSrt8Fu+IpjGT8SY8hN0mlaA6GY8t0P5PjIOZemULz/E2Bnm/2dcUOena75OTNkHI76uZBNUUq3A==

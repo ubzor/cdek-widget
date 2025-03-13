@@ -5,6 +5,9 @@
 
     import type { CdekWidgetOptions } from '#/index.d'
 
+    import filtersIcon from '../../static/images/filters-icon.svg?raw'
+    import listIcon from '../../static/images/list-icon.svg?raw'
+
     let {
         bounds = $bindable(),
         deliveryPointComponentIsVisible = $bindable(),
@@ -70,7 +73,7 @@
         listButton = new window.ymaps.control.Button({
             data: {
                 title: 'Показать список пунктов выдачи',
-                image: '/images/list-icon.svg'
+                content: `<div class="m-[5px]">${listIcon}</div>`
             },
             options: { selectOnClick: false }
         })
@@ -88,7 +91,7 @@
         filtersButton = new window.ymaps.control.Button({
             data: {
                 title: 'Фильтры',
-                image: '/images/filters-icon.svg'
+                content: `<div class="m-[5px]">${filtersIcon}</div>`
             },
             options: { selectOnClick: false }
         })
@@ -152,11 +155,17 @@
 
 <div bind:this={mapContainer} class="map-container h-full w-full"></div>
 
-<style>
+<style lang="postcss">
+    @import 'tailwindcss';
+
     .map-container {
         :global {
             .ymaps-2-1-79-ground-pane {
-                filter: grayscale(1);
+                @apply grayscale;
+            }
+
+            .ymaps-2-1-79-float-button-text {
+                @apply !p-0;
             }
         }
     }

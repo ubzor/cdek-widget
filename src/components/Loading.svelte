@@ -1,9 +1,18 @@
-<script lang="ts"></script>
+<script lang="ts">
+    import loadingIconUrl from '../../static/images/loading-icon.svg'
+</script>
 
-<div class="flex justify-center items-center absolute top-[14px] right-[85px]">
-    <img
-        src="/images/loading-icon.svg"
-        alt="Loading"
-        class="w-5 h-5 text-gray-600 animate-spin"
-    />
+<div class="loading">
+    <img src={loadingIconUrl} alt="Loading" class="loading__icon" />
 </div>
+
+<style lang="postcss">
+    @import 'tailwindcss';
+
+    .loading {
+        @apply flex justify-center items-center absolute top-[14px] right-[85px];
+    }
+    .loading__icon {
+        @apply w-5 h-5 text-gray-600 animate-spin;
+    }
+</style>
