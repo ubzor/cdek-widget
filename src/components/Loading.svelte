@@ -10,9 +10,9 @@
     @import 'tailwindcss';
 
     .loading {
-        @apply flex justify-center items-center absolute top-[14px] right-[85px];
+        @apply w-full h-full flex justify-center items-center;
     }
     .loading__icon {
-        @apply w-5 h-5 text-gray-600 animate-spin;
+        @apply w-full h-full text-gray-600 animate-spin;
     }
 </style>

@@ -31,6 +31,7 @@
     let deliveryPointsListComponent: DeliveryPointsList | undefined = $state()
 
     let yandexMapsApiIsLoaded = $state(false)
+    let yandexMapsIsReady = $state(false)
     let bounds: number[][] | undefined = $state()
     let deliveryPointsCoordinates: CdekCoordinates[] = $state([])
 
@@ -89,6 +90,14 @@
 <div class="cdek-widget">
     <YandexMapLoader bind:yandexMapsApiIsLoaded {yandexMapsApiKey} />
 
+    {#if !yandexMapsIsReady}
+        <div class="cdek-widget__loading">
+            <div class="cdek-widget__loading-icon">
+                <Loading />
+            </div>
+        </div>
+    {/if}
+
     {#if yandexMapsApiIsLoaded}
         <CdekApiCoordinates
             bind:this={cdekApiCoordinatesComponent}
@@ -133,10 +142,15 @@
                 bind:filtersComponentIsVisible
                 onUpdateDeliveryPoints={cdekApiCoordinatesComponent?.getDeliveryPoints}
                 onGetDeliveryPointById={cdekApiDeliveryPointsComponent?.getDeliveryPointById}
-                {onReady}
+                onReady={() => {
+                    yandexMapsIsReady = true
+                    onReady && onReady()
+                }}
             />
             {#if cdekApiCoordinatesIsLoading}
-                <Loading />
+                <div class="cdek-widget__map-loading">
+                    <Loading />
+                </div>
             {/if}
         </div>
 
@@ -198,13 +212,25 @@
     @import 'tailwindcss';
 
     /* TODO: понять как сделать nested-правила */
-    /* TODO: нормально минифицировать стили */
+    /* TODO: дедубликация стилей */
 
     .cdek-widget {
-        @apply flex w-full h-full border border-gray-300 rounded shadow overflow-hidden;
+        @apply flex w-full h-full border border-gray-300 rounded shadow overflow-hidden relative;
     }
 
     .cdek-widget__map {
-        @apply h-full w-full min-w-0 shrink-1 overflow-hidden relative;
+        @apply h-full w-full min-w-0 shrink-1 overflow-hidden absolute z-[1];
+    }
+
+    .cdek-widget__map-loading {
+        @apply w-5 h-5 absolute top-[14px] right-[85px];
+    }
+
+    .cdek-widget__loading {
+        @apply w-full h-full flex justify-center items-center p-4;
+    }
+
+    .cdek-widget__loading-icon {
+        @apply w-full h-full flex justify-center items-center max-w-20 max-h-20;
     }
 </style>
