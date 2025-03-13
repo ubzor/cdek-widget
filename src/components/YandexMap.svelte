@@ -73,7 +73,7 @@
         listButton = new window.ymaps.control.Button({
             data: {
                 title: 'Показать список пунктов выдачи',
-                content: `<div class="m-[5px]">${listIcon}</div>`
+                content: `<div class="!m-[5px]">${listIcon}</div>`
             },
             options: { selectOnClick: false }
         })
@@ -91,7 +91,7 @@
         filtersButton = new window.ymaps.control.Button({
             data: {
                 title: 'Фильтры',
-                content: `<div class="m-[5px]">${filtersIcon}</div>`
+                content: `<div class="!m-[5px]">${filtersIcon}</div>`
             },
             options: { selectOnClick: false }
         })
