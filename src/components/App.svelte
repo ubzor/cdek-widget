@@ -219,7 +219,7 @@
     }
 
     .cdek-widget__map {
-        @apply h-full w-full min-w-0 shrink-1 overflow-hidden absolute z-[1];
+        @apply h-full w-full min-w-0 shrink-1 overflow-hidden;
     }
 
     .cdek-widget__map-loading {
@@ -227,7 +227,7 @@
     }
 
     .cdek-widget__loading {
-        @apply w-full h-full flex justify-center items-center p-4;
+        @apply w-full h-full flex justify-center items-center p-4 absolute z-[1];
     }
 
     .cdek-widget__loading-icon {
