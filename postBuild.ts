@@ -75,11 +75,120 @@ while (currentPos < css.length) {
 const singleLayerComponentsPattern = /@layer\s+components\s*;/g
 result = result.replace(singleLayerComponentsPattern, '')
 
+// Функция для добавления префикса виджета ко всем CSS селекторам
+function addWidgetScope(css: string): string {
+    const WIDGET_PREFIX = '.cdek-widget'
+
+    // Более простой подход - заменяем весь CSS блок за блоком
+    let result = css
+
+    // Обрабатываем @layer блоки с помощью regex
+    result = result.replace(
+        /@layer\s+(theme|base|components|utilities)\s*\{([^{}]*(?:\{[^}]*\}[^{}]*)*)\}/g,
+        (match, layerName, content) => {
+            // Обрабатываем содержимое layer блока
+            const scopedContent = addPrefixToSelectors(content, WIDGET_PREFIX, layerName)
+            return `@layer ${layerName}{${scopedContent}}`
+        }
+    )
+
+    return result
+}
+
+// Функция для добавления префикса к селекторам
+function addPrefixToSelectors(css: string, prefix: string, layerName: string): string {
+    // Более точная обработка CSS с учетом @media правил
+    return css.replace(
+        /@media[^{]*\{([^{}]*(?:\{[^}]*\}[^{}]*)*)\}|([^{}]*)\{([^{}]*)\}/g,
+        (match, mediaContent, selector, declarations) => {
+            if (mediaContent !== undefined) {
+                // Это @media правило - рекурсивно обрабатываем содержимое
+                const mediaPrefix = match.substring(0, match.indexOf('{') + 1)
+                const processedContent = addPrefixToSelectors(
+                    mediaContent,
+                    prefix,
+                    layerName
+                )
+                return `${mediaPrefix}${processedContent}}`
+            } else if (selector !== undefined && declarations !== undefined) {
+                // Это обычное CSS правило
+                const processedSelectors = selector
+                    .split(',')
+                    .map((sel) => {
+                        sel = sel.trim()
+
+                        // Пропускаем пустые селекторы
+                        if (!sel) return ''
+
+                        // Пропускаем некоторые специальные селекторы
+                        if (
+                            sel.startsWith(':root') ||
+                            sel.startsWith(':host') ||
+                            sel.startsWith('@') ||
+                            sel.includes(':where(') ||
+                            sel.includes('::file-selector-button') ||
+                            sel.includes('::-webkit-') ||
+                            sel.includes(':-moz-') ||
+                            sel.includes('::placeholder') ||
+                            sel.includes('::backdrop')
+                        ) {
+                            return sel
+                        }
+
+                        // Для base слоя удаляем некоторые глобальные селекторы
+                        if (layerName === 'base') {
+                            if (
+                                sel === 'html' ||
+                                sel === 'body' ||
+                                sel === '*' ||
+                                sel.match(/^(html|body|\*)(\s|$|,)/)
+                            ) {
+                                return '' // Удаляем эти селекторы
+                            }
+                        }
+
+                        // Добавляем префикс если его еще нет
+                        if (!sel.includes(prefix)) {
+                            // Для селекторов тегов, классов и ID
+                            if (
+                                sel.match(/^[a-zA-Z]/) ||
+                                sel.startsWith('.') ||
+                                sel.startsWith('#')
+                            ) {
+                                return `${prefix} ${sel}`
+                            }
+                            // Для псевдо-элементов и псевдо-классов
+                            if (sel.startsWith('::') || sel.startsWith(':')) {
+                                return `${prefix}${sel}`
+                            }
+                        }
+
+                        return sel
+                    })
+                    .filter((s) => s.trim()) // Удаляем пустые селекторы
+                    .join(',')
+
+                if (!processedSelectors.trim()) {
+                    return '' // Если все селекторы были удалены
+                }
+
+                return `${processedSelectors}{${declarations}}`
+            }
+
+            return match
+        }
+    )
+}
+
+// Применяем изоляцию стилей
+result = addWidgetScope(result)
+
 // Если были найдены дубликаты или одиночные @layer components;, сохраняем изменения
 const duplicatesRemoved = layerTypes.filter((type) => seen.has(type)).length > 0
 const singleLayerComponentsRemoved = css !== result
+const stylesScoped = result !== css
 
-if (duplicatesRemoved || singleLayerComponentsRemoved) {
+if (duplicatesRemoved || singleLayerComponentsRemoved || stylesScoped) {
     fs.writeFileSync(CSS_PATH, result, 'utf8')
 
     if (duplicatesRemoved) {
@@ -88,6 +197,10 @@ if (duplicatesRemoved || singleLayerComponentsRemoved) {
 
     if (singleLayerComponentsRemoved) {
         console.log(`Standalone @layer components; declarations removed from style.css`)
+    }
+
+    if (stylesScoped) {
+        console.log(`Styles scoped to .cdek-widget container`)
     }
 } else {
     console.log(
