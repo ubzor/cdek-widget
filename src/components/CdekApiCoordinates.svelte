@@ -31,19 +31,22 @@
     } = $props()
 
     let queue = new Queue({ autostart: true, concurrency: 1 })
+    let fetchQueue = new Queue({ autostart: true, concurrency: 1 })
 
     queue.addEventListener('end', () => {
         cdekApiCoordinatesIsLoading = false
     })
 
-    let abortController: AbortController = $state(new AbortController())
+    fetchQueue.addEventListener('start', () => {
+        cdekApiCoordinatesIsLoading = true
+    })
+
+    fetchQueue.addEventListener('end', () => {
+        cdekApiCoordinatesIsLoading = false
+    })
 
     let mergeWorker: Worker
     let filterWorker: Worker
-
-    let isFetchingDeliveryPoints = $state(false)
-    let isParsingDeliveryPoints = $state(false)
-    let isAbortingGettingDeliveryPoints = $state(false)
 
     let updatedDeliveryPointsIds: string[] = $state([])
 
@@ -109,123 +112,92 @@
     export const getDeliveryPoints = async () => {
         if (!bounds) return
 
-        if (isFetchingDeliveryPoints) {
-            abortController.abort()
-            abortController = new AbortController()
-        }
+        // Очищаем очередь и добавляем новое задание
+        fetchQueue.end()
+        fetchQueue.start()
 
-        if (isParsingDeliveryPoints) {
-            isAbortingGettingDeliveryPoints = true
+        fetchQueue.push(async () => {
+            const abortController = new AbortController()
 
-            queue.end()
-            queue.start()
+            try {
+                const {
+                    0: [minLatitude, minLongitude],
+                    1: [maxLatitude, maxLongitude]
+                } = bounds
 
-            await new Promise<void>((resolve) => {
-                const interval = setInterval(() => {
-                    if (!isAbortingGettingDeliveryPoints && !isParsingDeliveryPoints) {
-                        clearInterval(interval)
-                        resolve()
+                const activeFilters = Object.fromEntries(
+                    Object.entries(filters).map(([key, value]) => [
+                        key,
+                        value ? 'true' : 'false'
+                    ])
+                ) as Record<keyof CdekFilters, 'true' | 'false'>
+
+                const params = new URLSearchParams({
+                    minLongitude: minLongitude.toString(),
+                    maxLatitude: maxLatitude.toString(),
+                    maxLongitude: maxLongitude.toString(),
+                    minLatitude: minLatitude.toString(),
+                    ...activeFilters
+                })
+
+                const response = await fetch(
+                    `${apiUrl}/delivery-points/bounding-box?${params}`,
+                    {
+                        method: 'GET',
+                        signal: abortController.signal
                     }
-                }, 10)
-            })
+                )
 
-            mergeWorker?.terminate()
-            filterWorker?.terminate()
-        }
+                const reader = response.body?.getReader()
+                let remainder = ''
+                updatedDeliveryPointsIds = []
 
-        const {
-            0: [minLatitude, minLongitude],
-            1: [maxLatitude, maxLongitude]
-        } = bounds
+                while (reader) {
+                    const { done, value } = await reader.read()
 
-        const activeFilters = Object.fromEntries(
-            Object.entries(filters).map(([key, value]) => [key, value ? 'true' : 'false'])
-        ) as Record<keyof CdekFilters, 'true' | 'false'>
+                    if (value) {
+                        const { parsedData, remainder: newReminder } =
+                            parseJsonFromUintArray<CdekCoordinates[]>(value, remainder)
 
-        const params = new URLSearchParams({
-            minLongitude: minLongitude.toString(),
-            maxLatitude: maxLatitude.toString(),
-            maxLongitude: maxLongitude.toString(),
-            minLatitude: minLatitude.toString(),
-            ...activeFilters
-        })
+                        remainder = newReminder
 
-        let response: Response
+                        if (parsedData) {
+                            updateDeliveryPoints(parsedData)
+                        }
+                    }
 
-        isFetchingDeliveryPoints = true
-        cdekApiCoordinatesIsLoading = true
-
-        try {
-            response = await fetch(`${apiUrl}/delivery-points/bounding-box?${params}`, {
-                method: 'GET',
-                signal: abortController.signal
-            })
-
-            isFetchingDeliveryPoints = false
-        } catch (error: any) {
-            isFetchingDeliveryPoints = false
-
-            if (error.name !== 'AbortError') {
-                console.log('Error fetching delivery points:', error.message)
-            }
-
-            return
-        }
-
-        const reader = response.body?.getReader()
-        let remainder = ''
-
-        isParsingDeliveryPoints = true
-        updatedDeliveryPointsIds = []
-
-        while (reader) {
-            if (isAbortingGettingDeliveryPoints) {
-                reader.cancel()
-
-                isAbortingGettingDeliveryPoints = false
-                isParsingDeliveryPoints = false
-
-                return
-            }
-
-            const { done, value } = await reader.read()
-
-            if (value) {
-                const { parsedData, remainder: newReminder } = parseJsonFromUintArray<
-                    CdekCoordinates[]
-                >(value, remainder)
-
-                remainder = newReminder
-
-                if (!parsedData) continue
-
-                updateDeliveryPoints(parsedData)
-            }
-
-            if (done) {
-                if (remainder) {
-                    try {
-                        updateDeliveryPoints(
-                            JSON.parse(
-                                '[' +
-                                    (remainder.startsWith(',')
-                                        ? remainder.slice(1)
-                                        : remainder) +
-                                    '}]'
-                            )
-                        )
-                    } catch (error) {
-                        console.error('Error parsing the final remaining JSON:', error)
+                    if (done) {
+                        if (remainder) {
+                            try {
+                                updateDeliveryPoints(
+                                    JSON.parse(
+                                        '[' +
+                                            (remainder.startsWith(',')
+                                                ? remainder.slice(1)
+                                                : remainder) +
+                                            '}]'
+                                    )
+                                )
+                            } catch (error) {
+                                console.error(
+                                    'Error parsing the final remaining JSON:',
+                                    error
+                                )
+                            }
+                        }
+                        return
                     }
                 }
-
-                isParsingDeliveryPoints = false
-                return
+            } catch (error: any) {
+                if (error.name !== 'AbortError') {
+                    console.log('Error fetching delivery points:', error.message)
+                }
             }
-        }
+        })
     }
 
     onMount(() => {
         queue.start()
+        fetchQueue.start()
     })
 </script>
