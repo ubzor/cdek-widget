@@ -1,6 +1,6 @@
 {
     "name": "cdek-widget",
-    "version": "0.0.36",
+    "version": "0.0.37",
     "license": "MIT",
     "type": "module",
     "files": [
@@ -22,7 +22,7 @@
         "dev": "vite",
         "build": "vite build",
         "postbuild": "yarn tsx postBuild.ts",
-        "publish": "yarn build && npm publish"
+        "publish": "yarn build && npm login && npm publish"
     },
     "devDependencies": {
         "@sveltejs/adapter-auto": "^4.0.0",
